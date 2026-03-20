@@ -16,6 +16,7 @@ struct MainWindow: View {
             SidebarView()
         } detail: {
             contentView
+                .clipped()
                 .inspector(isPresented: $inspectorIsPresented) {
                     InspectorView()
                         .inspectorColumnWidth(min: 250, ideal: 300, max: 400)
