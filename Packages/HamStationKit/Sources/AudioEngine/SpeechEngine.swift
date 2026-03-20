@@ -23,6 +23,10 @@ public final class SpeechEngine: NSObject, ObservableObject {
     public var kokoroSpeed: Float = 1.0
     public var systemVoiceId: String? = nil
     public var volume: Float = 0.8
+    /// When true, Kokoro failure skips speech entirely instead of falling back to Apple TTS
+    public var suppressSystemFallback: Bool = false
+    /// Published error for UI display when Kokoro fails
+    @Published public var lastError: String? = nil
 
     private let synthesizer = AVSpeechSynthesizer()
     private var audioPlayer: AVAudioPlayer?
@@ -31,6 +35,7 @@ public final class SpeechEngine: NSObject, ObservableObject {
     private var pythonPath: String = "/usr/bin/python3"  // resolved during availability check
     private var currentTask: Task<Void, Never>?
     private var completionHandler: (@MainActor () -> Void)?
+    private var kokoroProcess: Process?  // track subprocess so we can kill it on stop
 
     private let tempDir: URL
 
@@ -138,7 +143,17 @@ public final class SpeechEngine: NSObject, ObservableObject {
         audioPlayer?.stop()
         audioPlayer = nil
         synthesizer.stopSpeaking(at: .immediate)
+        // Kill any running Kokoro subprocess
+        if let proc = kokoroProcess, proc.isRunning {
+            proc.terminate()
+        }
+        kokoroProcess = nil
         isSpeaking = false
+        // Resume any pending continuation so speakAndWait doesn't hang
+        if let handler = completionHandler {
+            completionHandler = nil
+            handler()
+        }
     }
 
     // MARK: - Internal
@@ -180,8 +195,10 @@ public final class SpeechEngine: NSObject, ObservableObject {
         let outputPath = outputDir.path
 
         let python = pythonPath
-        let result = await Task.detached { () -> Int32 in
-            let process = Process()
+        let process = Process()
+        let errPipe = Pipe()
+
+        let result = await Task.detached { [weak self] () -> Int32 in
             process.executableURL = URL(fileURLWithPath: python)
             process.arguments = [
                 "-m", "mlx_audio.tts.generate",
@@ -192,7 +209,6 @@ public final class SpeechEngine: NSObject, ObservableObject {
                 "--output", outputPath,
             ]
             process.standardOutput = Pipe()
-            let errPipe = Pipe()
             process.standardError = errPipe
 
             do {
@@ -204,14 +220,27 @@ public final class SpeechEngine: NSObject, ObservableObject {
             }
         }.value
 
+        // Track the process so stop() can kill it
+        kokoroProcess = process
+
         // mlx_audio outputs to <outputDir>/audio_000.wav
         let wavFile = outputDir.appendingPathComponent("audio_000.wav")
 
         guard result == 0, FileManager.default.fileExists(atPath: wavFile.path) else {
-            // Kokoro failed — fall back to system voice
+            let stderrData = errPipe.fileHandleForReading.readDataToEndOfFile()
+            let stderrText = String(data: stderrData, encoding: .utf8) ?? "Unknown error"
+            lastError = "Kokoro TTS failed: \(stderrText.prefix(200))"
+
+            if suppressSystemFallback {
+                // Don't fall back — just skip speech entirely
+                isSpeaking = false
+                return
+            }
             speakWithSystem(text)
             return
         }
+
+        lastError = nil  // clear any previous error
 
         do {
             let data = try Data(contentsOf: wavFile)
@@ -226,6 +255,10 @@ public final class SpeechEngine: NSObject, ObservableObject {
                 try? FileManager.default.removeItem(at: outputDir)
             }
         } catch {
+            if suppressSystemFallback {
+                isSpeaking = false
+                return
+            }
             speakWithSystem(text)
         }
     }

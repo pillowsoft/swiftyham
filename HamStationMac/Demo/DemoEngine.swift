@@ -50,6 +50,8 @@ final class DemoEngine {
         isRunning = true
         currentSceneIndex = 0
         appState.isDemoMode = true
+        // Never fall back to Apple TTS during demo — silence is better than robotic voice
+        speechEngine.suppressSystemFallback = true
         playScene(at: 0)
     }
 
