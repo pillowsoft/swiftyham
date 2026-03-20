@@ -101,6 +101,21 @@ struct FirstRunWizard: View {
             .tint(Color(hex: "FF6A00"))
             .controlSize(.large)
 
+            Button {
+                // Skip wizard, set demo defaults, and launch demo mode
+                appState.operatorCallsign = "W1AW"
+                appState.gridSquare = "FN31"
+                appState.licenseClass = "Extra"
+                appState.isDemoMode = true
+                appState.hasCompletedOnboarding = true
+                appState.saveToDefaults()
+            } label: {
+                Text("Try Demo")
+                    .frame(width: 160)
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.large)
+
             Spacer()
         }
     }
