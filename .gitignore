@@ -1,0 +1,33 @@
+# Xcode
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+*.xcworkspace/xcuserdata/
+DerivedData/
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Swift Package Manager
+.build/
+Packages/HamStationKit/.build/
+Package.resolved
+*.resolved
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# gstack logs
+.gstack/
+
+# IDE
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Secrets
+*.env
+*.key

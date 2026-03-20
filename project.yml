@@ -1,0 +1,44 @@
+name: HamStation
+options:
+  bundleIdPrefix: com.hamstationpro
+  deploymentTarget:
+    macOS: "15.0"
+  xcodeVersion: "26.3"
+  createIntermediateGroups: true
+  generateEmptyDirectories: false
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MACOSX_DEPLOYMENT_TARGET: "15.0"
+    CODE_SIGN_IDENTITY: "-"
+    CODE_SIGN_STYLE: Automatic
+    SWIFT_STRICT_CONCURRENCY: complete
+
+packages:
+  HamStationKit:
+    path: Packages/HamStationKit
+
+targets:
+  HamStation:
+    type: application
+    platform: macOS
+    sources:
+      - path: HamStationMac
+    dependencies:
+      - package: HamStationKit
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.hamstationpro.HamStation
+        INFOPLIST_VALUES: >-
+          PRODUCT_NAME=$(PRODUCT_NAME)
+          MARKETING_VERSION=1.0
+          CURRENT_PROJECT_VERSION=1
+        GENERATE_INFOPLIST_FILE: YES
+    entitlements:
+      path: HamStationMac/HamStation.entitlements
+      properties:
+        com.apple.security.app-sandbox: false
+        com.apple.security.network.client: true
+        com.apple.security.device.audio-input: true
+        com.apple.security.device.usb: true

@@ -1,0 +1,466 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		04F4A2DEAD1267F496917F91 /* HamStationApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2B17B6BF54D282D059E3543 /* HamStationApp.swift */; };
+		068F254FCC71DEDD086A7327 /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41B70A1F08D8C32C3D05153F /* MenuBarView.swift */; };
+		0870CAF8DC3DA49C8800D87D /* ContestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9D61FE973D24B0432AE8EB9 /* ContestView.swift */; };
+		0B212B9653A4BAC0E9F85B6F /* AIAssistantView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CDF5C1B983941F63A337F7F /* AIAssistantView.swift */; };
+		18F24155F94D11ABA7F3F9E4 /* PropagationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18DFA358F28EB058F7AFFC1F /* PropagationView.swift */; };
+		1A1BDA41E1736B8D37189A7C /* AwardsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFEAB7D482D643312649A2C5 /* AwardsView.swift */; };
+		2CEC2BBA9C8D0909873B3B83 /* LogbookView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED8A45E88A4BC5E8335E4B2A /* LogbookView.swift */; };
+		34FDE74B347A412055F3FE26 /* EmCommView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7CE3F04972118DCF2F357F7 /* EmCommView.swift */; };
+		365F31158E37BACFB8DD1277 /* ToolsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A1246D6CF9F044591326ECC /* ToolsView.swift */; };
+		3F489E16A004F4F90D83B5E5 /* StatusBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40C2CED81A9EE1B99A42415 /* StatusBar.swift */; };
+		40CE63DD0585BA32475E2EE2 /* ColorHex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C0A690529486F6DF224074A /* ColorHex.swift */; };
+		44252DD7733B5364BBEDCA2B /* RepeaterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FEFA8C54D651A320087DF2 /* RepeaterView.swift */; };
+		4F2F5FB75421BFDF2C2CB90C /* CWTrainingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688BAE61F56D2822EF3344EF /* CWTrainingView.swift */; };
+		5864D8185FE42321471E0DFE /* APRSView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 143F636F23047A5BE5711524 /* APRSView.swift */; };
+		676916A05D712F76EA0D0FDF /* HamStationKit in Frameworks */ = {isa = PBXBuildFile; productRef = 7B87D318E9CCAEDA91F2FCC9 /* HamStationKit */; };
+		78DAAD095B0E31832F5C69C5 /* SatelliteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB07F6DC74137F3CC81766DA /* SatelliteView.swift */; };
+		79006EFD597E5FFD8D3B35D7 /* InspectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7325898D53D06731BE49C3D /* InspectorView.swift */; };
+		8347B53EA72882B1F5E58D0B /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3797CD51E01B264BBD19ABED /* SettingsView.swift */; };
+		8BCCBB6ACB13402FBFA3D5B8 /* HamStationCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = C588717002051DEAE99E7E42 /* HamStationCommands.swift */; };
+		906D072D9CB418571B55A4ED /* ServiceContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921D7A91548B00041AC1CF14 /* ServiceContainer.swift */; };
+		9C19B37AFC4BB5A9BCAA0334 /* MainWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B09EBEFF15C9F4EE52461946 /* MainWindow.swift */; };
+		B643F23A2A905CF087449EBA /* BackgroundTasks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41B977252F3358C01B120601 /* BackgroundTasks.swift */; };
+		BD332A9C9A24638F5E3A965A /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C91CA7C1F0E9D2450E96B7F5 /* SidebarView.swift */; };
+		C03C770B4CA6A2A51D164803 /* ToolbarContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90313EC1E6ECA67DAFA55296 /* ToolbarContent.swift */; };
+		C63A8E0FE829CF78DED25422 /* DXClusterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363541D89C3F16A43ABB3705 /* DXClusterView.swift */; };
+		E3AC60C49493644C872AE681 /* SOTAPOTAView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 078BE951D14B0601A2C71ACA /* SOTAPOTAView.swift */; };
+		F112B36CAC1B5157F7E2EE11 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3BD093D5DF5F4C2E9276827 /* AppState.swift */; };
+		F5C927C175143C9A636C116B /* AntennaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FB97B8D82FE9F9B9F6F75D0 /* AntennaView.swift */; };
+		FD4CC07B9FC979D63B9A1246 /* FirstRunWizard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BD84C8888F586BD32EE2EA5 /* FirstRunWizard.swift */; };
+		FEB030E4F74E6A0F3FD151A0 /* BandMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27EFBEA948BD73BED3327508 /* BandMapView.swift */; };
+		FF6B8CF6E4E1A49DCFFB2FAC /* LogbookWindowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BB7422C58B28C8A1A410266 /* LogbookWindowView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		078BE951D14B0601A2C71ACA /* SOTAPOTAView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SOTAPOTAView.swift; sourceTree = "<group>"; };
+		143F636F23047A5BE5711524 /* APRSView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APRSView.swift; sourceTree = "<group>"; };
+		15FEFA8C54D651A320087DF2 /* RepeaterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepeaterView.swift; sourceTree = "<group>"; };
+		18DFA358F28EB058F7AFFC1F /* PropagationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PropagationView.swift; sourceTree = "<group>"; };
+		1CDF5C1B983941F63A337F7F /* AIAssistantView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIAssistantView.swift; sourceTree = "<group>"; };
+		27EFBEA948BD73BED3327508 /* BandMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BandMapView.swift; sourceTree = "<group>"; };
+		2A1246D6CF9F044591326ECC /* ToolsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolsView.swift; sourceTree = "<group>"; };
+		31364F17BBE8F93ABE9EE48A /* HamStation.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = HamStation.entitlements; sourceTree = "<group>"; };
+		363541D89C3F16A43ABB3705 /* DXClusterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DXClusterView.swift; sourceTree = "<group>"; };
+		3797CD51E01B264BBD19ABED /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		41B70A1F08D8C32C3D05153F /* MenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarView.swift; sourceTree = "<group>"; };
+		41B977252F3358C01B120601 /* BackgroundTasks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundTasks.swift; sourceTree = "<group>"; };
+		688BAE61F56D2822EF3344EF /* CWTrainingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CWTrainingView.swift; sourceTree = "<group>"; };
+		6FB97B8D82FE9F9B9F6F75D0 /* AntennaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AntennaView.swift; sourceTree = "<group>"; };
+		7AA7104501BD635EA2C42D69 /* HamStationKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = HamStationKit; path = Packages/HamStationKit; sourceTree = SOURCE_ROOT; };
+		8C0A690529486F6DF224074A /* ColorHex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorHex.swift; sourceTree = "<group>"; };
+		90313EC1E6ECA67DAFA55296 /* ToolbarContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolbarContent.swift; sourceTree = "<group>"; };
+		921D7A91548B00041AC1CF14 /* ServiceContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceContainer.swift; sourceTree = "<group>"; };
+		9BB7422C58B28C8A1A410266 /* LogbookWindowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogbookWindowView.swift; sourceTree = "<group>"; };
+		9BD84C8888F586BD32EE2EA5 /* FirstRunWizard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstRunWizard.swift; sourceTree = "<group>"; };
+		A28D9F1352506CB3B14A79D8 /* HamStation.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HamStation.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A2B17B6BF54D282D059E3543 /* HamStationApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HamStationApp.swift; sourceTree = "<group>"; };
+		B09EBEFF15C9F4EE52461946 /* MainWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainWindow.swift; sourceTree = "<group>"; };
+		B40C2CED81A9EE1B99A42415 /* StatusBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBar.swift; sourceTree = "<group>"; };
+		C3BD093D5DF5F4C2E9276827 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		C588717002051DEAE99E7E42 /* HamStationCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HamStationCommands.swift; sourceTree = "<group>"; };
+		C91CA7C1F0E9D2450E96B7F5 /* SidebarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarView.swift; sourceTree = "<group>"; };
+		C9D61FE973D24B0432AE8EB9 /* ContestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContestView.swift; sourceTree = "<group>"; };
+		D7325898D53D06731BE49C3D /* InspectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InspectorView.swift; sourceTree = "<group>"; };
+		E7CE3F04972118DCF2F357F7 /* EmCommView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmCommView.swift; sourceTree = "<group>"; };
+		EB07F6DC74137F3CC81766DA /* SatelliteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SatelliteView.swift; sourceTree = "<group>"; };
+		ED8A45E88A4BC5E8335E4B2A /* LogbookView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogbookView.swift; sourceTree = "<group>"; };
+		FFEAB7D482D643312649A2C5 /* AwardsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AwardsView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A76162A41315D03061B3DBB1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				676916A05D712F76EA0D0FDF /* HamStationKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		14804FF10D6260761358931F /* Windows */ = {
+			isa = PBXGroup;
+			children = (
+				1CDF5C1B983941F63A337F7F /* AIAssistantView.swift */,
+				6FB97B8D82FE9F9B9F6F75D0 /* AntennaView.swift */,
+				143F636F23047A5BE5711524 /* APRSView.swift */,
+				FFEAB7D482D643312649A2C5 /* AwardsView.swift */,
+				27EFBEA948BD73BED3327508 /* BandMapView.swift */,
+				C9D61FE973D24B0432AE8EB9 /* ContestView.swift */,
+				688BAE61F56D2822EF3344EF /* CWTrainingView.swift */,
+				363541D89C3F16A43ABB3705 /* DXClusterView.swift */,
+				E7CE3F04972118DCF2F357F7 /* EmCommView.swift */,
+				C588717002051DEAE99E7E42 /* HamStationCommands.swift */,
+				D7325898D53D06731BE49C3D /* InspectorView.swift */,
+				ED8A45E88A4BC5E8335E4B2A /* LogbookView.swift */,
+				9BB7422C58B28C8A1A410266 /* LogbookWindowView.swift */,
+				B09EBEFF15C9F4EE52461946 /* MainWindow.swift */,
+				41B70A1F08D8C32C3D05153F /* MenuBarView.swift */,
+				18DFA358F28EB058F7AFFC1F /* PropagationView.swift */,
+				15FEFA8C54D651A320087DF2 /* RepeaterView.swift */,
+				EB07F6DC74137F3CC81766DA /* SatelliteView.swift */,
+				3797CD51E01B264BBD19ABED /* SettingsView.swift */,
+				C91CA7C1F0E9D2450E96B7F5 /* SidebarView.swift */,
+				078BE951D14B0601A2C71ACA /* SOTAPOTAView.swift */,
+				B40C2CED81A9EE1B99A42415 /* StatusBar.swift */,
+				90313EC1E6ECA67DAFA55296 /* ToolbarContent.swift */,
+				2A1246D6CF9F044591326ECC /* ToolsView.swift */,
+			);
+			path = Windows;
+			sourceTree = "<group>";
+		};
+		1CCA547C2EE3443D7F97C180 = {
+			isa = PBXGroup;
+			children = (
+				AAE95CC03ED13AE4E4460902 /* HamStationMac */,
+				28637749BB758514C25EA7A0 /* Packages */,
+				83DF45BEF00D12478CA6DE6B /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		28637749BB758514C25EA7A0 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				7AA7104501BD635EA2C42D69 /* HamStationKit */,
+			);
+			path = Packages;
+			sourceTree = "<group>";
+		};
+		5BF32DA8D98E8AC46A58699E /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
+				9BD84C8888F586BD32EE2EA5 /* FirstRunWizard.swift */,
+			);
+			path = Onboarding;
+			sourceTree = "<group>";
+		};
+		83DF45BEF00D12478CA6DE6B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A28D9F1352506CB3B14A79D8 /* HamStation.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		AAE95CC03ED13AE4E4460902 /* HamStationMac */ = {
+			isa = PBXGroup;
+			children = (
+				C3BD093D5DF5F4C2E9276827 /* AppState.swift */,
+				41B977252F3358C01B120601 /* BackgroundTasks.swift */,
+				8C0A690529486F6DF224074A /* ColorHex.swift */,
+				31364F17BBE8F93ABE9EE48A /* HamStation.entitlements */,
+				A2B17B6BF54D282D059E3543 /* HamStationApp.swift */,
+				921D7A91548B00041AC1CF14 /* ServiceContainer.swift */,
+				5BF32DA8D98E8AC46A58699E /* Onboarding */,
+				14804FF10D6260761358931F /* Windows */,
+			);
+			path = HamStationMac;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		8BCBCE295B2328458105FA73 /* HamStation */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 79E98E7AFD5E2793BE227F73 /* Build configuration list for PBXNativeTarget "HamStation" */;
+			buildPhases = (
+				1A3DBDE5CA07AD38C81A877A /* Sources */,
+				A76162A41315D03061B3DBB1 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = HamStation;
+			packageProductDependencies = (
+				7B87D318E9CCAEDA91F2FCC9 /* HamStationKit */,
+			);
+			productName = HamStation;
+			productReference = A28D9F1352506CB3B14A79D8 /* HamStation.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		E8B0DDC91A175E83E469CF5B /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 2630;
+				TargetAttributes = {
+					8BCBCE295B2328458105FA73 = {
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = CC05105DA32F10D0CB26C2EC /* Build configuration list for PBXProject "HamStation" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 1CCA547C2EE3443D7F97C180;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				4DBE8BD14F99951D74E239B2 /* XCLocalSwiftPackageReference "Packages/HamStationKit" */,
+			);
+			preferredProjectObjectVersion = 77;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				8BCBCE295B2328458105FA73 /* HamStation */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		1A3DBDE5CA07AD38C81A877A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0B212B9653A4BAC0E9F85B6F /* AIAssistantView.swift in Sources */,
+				5864D8185FE42321471E0DFE /* APRSView.swift in Sources */,
+				F5C927C175143C9A636C116B /* AntennaView.swift in Sources */,
+				F112B36CAC1B5157F7E2EE11 /* AppState.swift in Sources */,
+				1A1BDA41E1736B8D37189A7C /* AwardsView.swift in Sources */,
+				B643F23A2A905CF087449EBA /* BackgroundTasks.swift in Sources */,
+				FEB030E4F74E6A0F3FD151A0 /* BandMapView.swift in Sources */,
+				4F2F5FB75421BFDF2C2CB90C /* CWTrainingView.swift in Sources */,
+				40CE63DD0585BA32475E2EE2 /* ColorHex.swift in Sources */,
+				0870CAF8DC3DA49C8800D87D /* ContestView.swift in Sources */,
+				C63A8E0FE829CF78DED25422 /* DXClusterView.swift in Sources */,
+				34FDE74B347A412055F3FE26 /* EmCommView.swift in Sources */,
+				FD4CC07B9FC979D63B9A1246 /* FirstRunWizard.swift in Sources */,
+				04F4A2DEAD1267F496917F91 /* HamStationApp.swift in Sources */,
+				8BCCBB6ACB13402FBFA3D5B8 /* HamStationCommands.swift in Sources */,
+				79006EFD597E5FFD8D3B35D7 /* InspectorView.swift in Sources */,
+				2CEC2BBA9C8D0909873B3B83 /* LogbookView.swift in Sources */,
+				FF6B8CF6E4E1A49DCFFB2FAC /* LogbookWindowView.swift in Sources */,
+				9C19B37AFC4BB5A9BCAA0334 /* MainWindow.swift in Sources */,
+				068F254FCC71DEDD086A7327 /* MenuBarView.swift in Sources */,
+				18F24155F94D11ABA7F3F9E4 /* PropagationView.swift in Sources */,
+				44252DD7733B5364BBEDCA2B /* RepeaterView.swift in Sources */,
+				E3AC60C49493644C872AE681 /* SOTAPOTAView.swift in Sources */,
+				78DAAD095B0E31832F5C69C5 /* SatelliteView.swift in Sources */,
+				906D072D9CB418571B55A4ED /* ServiceContainer.swift in Sources */,
+				8347B53EA72882B1F5E58D0B /* SettingsView.swift in Sources */,
+				BD332A9C9A24638F5E3A965A /* SidebarView.swift in Sources */,
+				3F489E16A004F4F90D83B5E5 /* StatusBar.swift in Sources */,
+				C03C770B4CA6A2A51D164803 /* ToolbarContent.swift in Sources */,
+				365F31158E37BACFB8DD1277 /* ToolsView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		BE10A9B3B7210FC9D044D498 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		BF47F80607DD8C42B56C21BB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = HamStationMac/HamStation.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_VALUES = "PRODUCT_NAME=$(PRODUCT_NAME) MARKETING_VERSION=1.0 CURRENT_PROJECT_VERSION=1";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.hamstationpro.HamStation;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		E7B6DB49E1B2FC7231688814 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		ECA84C7740D39A20D82CE934 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = HamStationMac/HamStation.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_VALUES = "PRODUCT_NAME=$(PRODUCT_NAME) MARKETING_VERSION=1.0 CURRENT_PROJECT_VERSION=1";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.hamstationpro.HamStation;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		79E98E7AFD5E2793BE227F73 /* Build configuration list for PBXNativeTarget "HamStation" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BF47F80607DD8C42B56C21BB /* Debug */,
+				ECA84C7740D39A20D82CE934 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		CC05105DA32F10D0CB26C2EC /* Build configuration list for PBXProject "HamStation" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BE10A9B3B7210FC9D044D498 /* Debug */,
+				E7B6DB49E1B2FC7231688814 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		4DBE8BD14F99951D74E239B2 /* XCLocalSwiftPackageReference "Packages/HamStationKit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/HamStationKit;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		7B87D318E9CCAEDA91F2FCC9 /* HamStationKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = HamStationKit;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = E8B0DDC91A175E83E469CF5B /* Project object */;
+}
