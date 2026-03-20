@@ -46,7 +46,7 @@ private struct ICSFormsListView: View {
     @State private var showingNewFormSheet = false
 
     var body: some View {
-        HSplitView {
+        HStack(spacing: 0) {
             // Form list
             VStack(spacing: 0) {
                 HStack {
@@ -98,6 +98,8 @@ private struct ICSFormsListView: View {
                 .listStyle(.sidebar)
             }
             .frame(minWidth: 220, idealWidth: 260)
+
+            Divider()
 
             // Form detail
             if let formId = selectedFormId,

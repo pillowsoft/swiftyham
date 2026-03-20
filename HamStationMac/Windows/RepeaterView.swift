@@ -53,7 +53,7 @@ struct RepeaterView: View {
 
             Divider()
 
-            HSplitView {
+            HStack(spacing: 0) {
                 // Map
                 Map {
                     ForEach(filteredRepeaters) { repeater in
@@ -69,6 +69,8 @@ struct RepeaterView: View {
                     }
                 }
                 .frame(minWidth: 300)
+
+                Divider()
 
                 // List + detail
                 VStack(spacing: 0) {

@@ -33,10 +33,12 @@ struct APRSView: View {
     }
 
     var body: some View {
-        HSplitView {
+        HStack(spacing: 0) {
             // Left: Map
             mapPanel
                 .frame(minWidth: 400)
+
+            Divider()
 
             // Right: Tabs for messages, stations, weather
             rightPanel

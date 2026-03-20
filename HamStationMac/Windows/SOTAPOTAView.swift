@@ -27,10 +27,12 @@ struct SOTAPOTAView: View {
 
             Divider()
 
-            HSplitView {
+            HStack(spacing: 0) {
                 // Map
                 mapView
                     .frame(minWidth: 300)
+
+                Divider()
 
                 // List + detail
                 VStack(spacing: 0) {

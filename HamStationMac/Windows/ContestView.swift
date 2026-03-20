@@ -25,7 +25,7 @@ struct ContestView: View {
 
             Divider()
 
-            HSplitView {
+            HStack(spacing: 0) {
                 // Left: Entry + QSO table
                 VStack(spacing: 0) {
                     // QSO entry form
@@ -38,6 +38,8 @@ struct ContestView: View {
                     qsoTable
                 }
                 .frame(minWidth: 500)
+
+                Divider()
 
                 // Right: Score + multipliers
                 scorePanel

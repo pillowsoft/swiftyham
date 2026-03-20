@@ -11,10 +11,12 @@ struct SatelliteView: View {
     @State private var isTracking: Bool = false
 
     var body: some View {
-        HSplitView {
+        HStack(spacing: 0) {
             // Left: Pass table
             passTable
-                .frame(minWidth: 400)
+                .frame(minWidth: 400, idealWidth: 500)
+
+            Divider()
 
             // Right: Pass detail + Doppler
             VStack(spacing: 0) {
