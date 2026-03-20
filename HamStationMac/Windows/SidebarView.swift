@@ -15,6 +15,7 @@ struct SidebarView: View {
                     .tag(section)
             }
             .listStyle(.sidebar)
+            .layoutPriority(1)
 
             Divider()
 

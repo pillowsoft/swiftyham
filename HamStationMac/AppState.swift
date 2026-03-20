@@ -120,6 +120,9 @@ enum SidebarSection: String, CaseIterable, Identifiable {
     case emcomm
     case antennaTools
     case cwTraining
+    case satellite
+    case ft8
+    case aiAssistant
     case tools
 
     var id: String { rawValue }
@@ -137,6 +140,9 @@ enum SidebarSection: String, CaseIterable, Identifiable {
         case .emcomm: return "EmComm"
         case .antennaTools: return "Antenna Tools"
         case .cwTraining: return "CW Training"
+        case .satellite: return "Satellites"
+        case .ft8: return "FT8"
+        case .aiAssistant: return "AI Assistant"
         case .tools: return "Tools"
         }
     }
@@ -154,6 +160,9 @@ enum SidebarSection: String, CaseIterable, Identifiable {
         case .emcomm: return "staroflife"
         case .antennaTools: return "antenna.radiowaves.left.and.right.slash"
         case .cwTraining: return "waveform.badge.mic"
+        case .satellite: return "globe.americas"
+        case .ft8: return "waveform"
+        case .aiAssistant: return "brain.head.profile"
         case .tools: return "wrench.and.screwdriver"
         }
     }

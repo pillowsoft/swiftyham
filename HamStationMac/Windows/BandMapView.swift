@@ -6,6 +6,7 @@ import HamStationKit
 
 struct BandMapView: View {
     @Environment(AppState.self) var appState
+    @Environment(ServiceContainer.self) var services
     @State private var selectedBand: String = "20m"
 
     private let hfBands: [(label: String, low: Double, high: Double)] = [
@@ -139,7 +140,21 @@ struct BandMapView: View {
         }
         .position(x: x, y: 70)
         .onTapGesture {
-            // TODO: Tune rig to this frequency
+            let hz = spot.frequency * 1000
+            Task {
+                if let rig = services.rigConnection {
+                    try? await rig.setFrequency(hz)
+                }
+                // Optimistic UI update
+                if let current = appState.rigState {
+                    appState.rigState = HamStationKit.RigState(
+                        frequency: hz,
+                        mode: current.mode,
+                        pttActive: current.pttActive,
+                        signalStrength: current.signalStrength
+                    )
+                }
+            }
         }
     }
 
@@ -218,4 +233,5 @@ struct BandMapView: View {
     BandMapView()
         .frame(width: 900, height: 400)
         .environment(AppState())
+        .environment(try! ServiceContainer())
 }

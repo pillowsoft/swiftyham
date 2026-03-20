@@ -144,6 +144,19 @@ public actor DatabaseManager {
         }
     }
 
+    /// Batch-inserts QSOs with optional extended records. Uses a single transaction.
+    public func batchCreateQSOs(_ qsos: [(QSO, QSOExtended?)]) async throws -> Int {
+        try await dbPool.write { db in
+            var count = 0
+            for (qso, extended) in qsos {
+                try qso.insert(db)
+                if let extended { try extended.insert(db) }
+                count += 1
+            }
+            return count
+        }
+    }
+
     // MARK: - Query Methods
 
     /// Fetches QSOs with optional filtering, sorting, and pagination.

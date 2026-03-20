@@ -30,7 +30,7 @@ struct SOTAPOTAView: View {
             HSplitView {
                 // Map
                 mapView
-                    .frame(minWidth: 400)
+                    .frame(minWidth: 300)
 
                 // List + detail
                 VStack(spacing: 0) {
@@ -69,7 +69,7 @@ struct SOTAPOTAView: View {
                         detailView(for: itemId)
                     }
                 }
-                .frame(minWidth: 300, idealWidth: 350)
+                .frame(minWidth: 250, idealWidth: 350)
             }
         }
         .navigationTitle("SOTA / POTA")

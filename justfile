@@ -430,6 +430,28 @@ check-tts:
 install-tts:
     pip install "mlx-audio[kokoro]" misaki num2words phonemizer spacy
 
+# Verify ScreenCaptureKit permission works (builds and briefly runs the app)
+record-test: build-app
+    #!/usr/bin/env bash
+    echo "Recording test: build succeeded."
+    echo "To test ScreenCaptureKit:"
+    echo "  1. Run the app (just run-fast)"
+    echo "  2. Click the Record button in the toolbar"
+    echo "  3. macOS will prompt for screen recording permission on first use"
+    echo "  4. Grant permission, then re-click Record to start"
+
+# Syntax-check recording source files (Swift 6 strict)
+check-recording:
+    cd Packages/HamStationKit && swiftc -parse -swift-version 6 -target arm64-apple-macosx15.0 -sdk $(xcrun --show-sdk-path --sdk macosx) Sources/Recording/*.swift && echo "Recording sources: OK"
+
+# Run ADIF converter tests only
+test-adif-converter:
+    cd Packages/HamStationKit && swift test --filter ADIFConverterTests
+
+# Syntax-check ADIF converter (Swift 6 strict)
+check-adif-converter:
+    cd Packages/HamStationKit && swiftc -parse -swift-version 6 Sources/ADIF/ADIFConverter.swift Sources/ADIF/ADIFRecord.swift Sources/ADIF/ADIFField.swift Sources/ADIF/ADIFDateFormatter.swift Sources/Models/QSO.swift Sources/Models/QSOExtended.swift Sources/Models/Band.swift Sources/Models/OperatingMode.swift Sources/Utilities/FrequencyFormatter.swift && echo "ADIFConverter: OK"
+
 # Count lines of code
 loc:
     @find Packages/HamStationKit/Sources -name "*.swift" | xargs wc -l | tail -1

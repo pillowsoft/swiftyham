@@ -198,7 +198,10 @@ public final class SpeechEngine: NSObject, ObservableObject {
         let process = Process()
         let errPipe = Pipe()
 
-        let result = await Task.detached { [weak self] () -> Int32 in
+        // Track the process so stop() can kill it
+        kokoroProcess = process
+
+        let result = await Task.detached { () -> Int32 in
             process.executableURL = URL(fileURLWithPath: python)
             process.arguments = [
                 "-m", "mlx_audio.tts.generate",
@@ -213,15 +216,21 @@ public final class SpeechEngine: NSObject, ObservableObject {
 
             do {
                 try process.run()
+
+                // Safety timeout: terminate subprocess if it takes longer than 20 seconds
+                let deadline = DispatchTime.now() + .seconds(20)
+                DispatchQueue.global().asyncAfter(deadline: deadline) {
+                    if process.isRunning {
+                        process.terminate()
+                    }
+                }
+
                 process.waitUntilExit()
                 return process.terminationStatus
             } catch {
                 return -1
             }
         }.value
-
-        // Track the process so stop() can kill it
-        kokoroProcess = process
 
         // mlx_audio outputs to <outputDir>/audio_000.wav
         let wavFile = outputDir.appendingPathComponent("audio_000.wav")

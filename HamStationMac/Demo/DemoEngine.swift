@@ -3,6 +3,7 @@
 
 import SwiftUI
 import HamStationKit
+import os.log
 
 @Observable
 @MainActor
@@ -15,6 +16,8 @@ final class DemoEngine {
     private var advanceTask: Task<Void, Never>?
     private var setupTask: Task<Void, Never>?
     private var scenes: [DemoScene] = []
+
+    private static let logger = Logger(subsystem: "com.hamstation", category: "DemoEngine")
 
     let appState: AppState
     let speechEngine = SpeechEngine()
@@ -120,10 +123,30 @@ final class DemoEngine {
             try? await Task.sleep(for: .seconds(1.0))
             if Task.isCancelled { return }
 
-            // 2. Speak narration and wait for it to finish
+            // 2. Speak narration with safety timeout (never hang)
             let narrationStart = Date()
             if narrationEnabled {
-                await speechEngine.speakAndWait("\(scene.title). \(scene.subtitle)")
+                Self.logger.debug("Scene \(scene.id): starting speech — \(scene.title)")
+                let speechText = "\(scene.title). \(scene.subtitle)"
+                let didSpeak = await withTaskGroup(of: Bool.self) { group in
+                    group.addTask {
+                        await self.speechEngine.speakAndWait(speechText)
+                        return true
+                    }
+                    group.addTask {
+                        try? await Task.sleep(for: .seconds(15))
+                        return false
+                    }
+                    let first = await group.next() ?? false
+                    group.cancelAll()
+                    return first
+                }
+                if !didSpeak {
+                    Self.logger.warning("Scene \(scene.id): speech timed out after 15s, advancing")
+                    speechEngine.stop()
+                } else {
+                    Self.logger.debug("Scene \(scene.id): speech completed normally")
+                }
             }
             if Task.isCancelled { return }
 

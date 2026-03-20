@@ -133,6 +133,8 @@ struct LogbookView: View {
     @State private var showFilterPopover: Bool = false
     @State private var filterBand: Band? = nil
     @State private var filterMode: OperatingMode? = nil
+    @State private var showNewQSOSheet: Bool = false
+    @State private var editingQSOId: UUID? = nil
 
     private var displayRows: [LogbookRow] {
         if let vm = viewModel {
@@ -212,8 +214,18 @@ struct LogbookView: View {
             }
             .contextMenu(forSelectionType: UUID.self) { ids in
                 if let selectedId = ids.first {
-                    Button("Edit QSO") {}
-                    Button("Look Up Callsign") {}
+                    Button("Edit QSO") {
+                        editingQSOId = selectedId
+                    }
+                    Button("Look Up Callsign") {
+                        if let row = displayRows.first(where: { $0.id == selectedId }) {
+                            Task {
+                                let _ = await services.lookupPipeline.lookup(
+                                    callsign: row.callsign, qrzApiKey: nil
+                                )
+                            }
+                        }
+                    }
                     Divider()
                     Button("LoTW QSL") {}
                     Button("eQSL") {}
@@ -225,8 +237,10 @@ struct LogbookView: View {
                         }
                     }
                 }
-            } primaryAction: { _ in
-                // Double-click: edit QSO
+            } primaryAction: { ids in
+                if let selectedId = ids.first {
+                    editingQSOId = selectedId
+                }
             }
         }
         .overlay {
@@ -246,6 +260,15 @@ struct LogbookView: View {
         .toolbar {
             ToolbarItem(placement: .automatic) {
                 Button {
+                    showNewQSOSheet = true
+                } label: {
+                    Label("New QSO", systemImage: "plus")
+                }
+                .keyboardShortcut("n")
+            }
+
+            ToolbarItem(placement: .automatic) {
+                Button {
                     showFilterPopover.toggle()
                 } label: {
                     Label("Filter", systemImage: filterBand != nil || filterMode != nil ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
@@ -262,6 +285,27 @@ struct LogbookView: View {
                         .foregroundStyle(.secondary)
                 }
             }
+        }
+        .sheet(isPresented: $showNewQSOSheet) {
+            if let vm = viewModel { Task { await vm.loadQSOs() } }
+        } content: {
+            QSOEntryView(viewModel: QSOEntryViewModel(
+                database: services.database,
+                lookupPipeline: services.lookupPipeline,
+                myCallsign: appState.operatorCallsign,
+                myGrid: appState.gridSquare
+            ))
+        }
+        .sheet(item: $editingQSOId) { qsoId in
+            QSOEditSheetLoader(
+                qsoId: qsoId,
+                services: services,
+                appState: appState,
+                onDismiss: {
+                    editingQSOId = nil
+                    if let vm = viewModel { Task { await vm.loadQSOs() } }
+                }
+            )
         }
         .onChange(of: selection) { _, newValue in
             appState.selectedQSOId = newValue
@@ -372,6 +416,44 @@ struct LogbookView: View {
             LogbookRow(id: UUID(), dateTime: date(daysAgo: 5, hour: 8, minute: 30), callsign: "TF3ML", band: "40m", mode: "FT8", frequency: "7.074", rstSent: "-11", rstRcvd: "-13", dxcc: "Iceland", name: "Magnus", comment: "Grey line path"),
         ]
     }()
+}
+
+// MARK: - Edit Sheet Loader
+
+/// Loads a QSO by ID and presents the edit sheet. This handles the async
+/// fetch so the .sheet(item:) call stays synchronous.
+private struct QSOEditSheetLoader: View {
+    let qsoId: UUID
+    let services: ServiceContainer
+    let appState: AppState
+    let onDismiss: () -> Void
+
+    @State private var loadedQSO: QSO? = nil
+
+    var body: some View {
+        Group {
+            if let qso = loadedQSO {
+                let vm = QSOEntryViewModel(
+                    database: services.database,
+                    lookupPipeline: services.lookupPipeline,
+                    myCallsign: appState.operatorCallsign,
+                    myGrid: appState.gridSquare
+                )
+                QSOEntryView(viewModel: vm)
+                    .onAppear { vm.loadForEdit(qso) }
+            } else {
+                ProgressView("Loading...")
+                    .frame(width: 480, height: 560)
+            }
+        }
+        .task {
+            loadedQSO = try? await services.database.fetchQSO(id: qsoId)
+        }
+    }
+}
+
+extension UUID: @retroactive Identifiable {
+    public var id: UUID { self }
 }
 
 #Preview {

@@ -20,12 +20,14 @@ struct SettingsView: View {
                 .tabItem { Label("Callsign Lookup", systemImage: "person.text.rectangle") }
             VoiceSettingsTab()
                 .tabItem { Label("Voice", systemImage: "waveform") }
+            RecordingSettingsTab()
+                .tabItem { Label("Recording", systemImage: "record.circle") }
             AISettingsTab()
                 .tabItem { Label("AI", systemImage: "brain") }
             AboutTab()
                 .tabItem { Label("About", systemImage: "info.circle") }
         }
-        .frame(width: 500, height: 380)
+        .frame(width: 500, height: 400)
     }
 }
 
@@ -377,6 +379,51 @@ private struct VoiceSettingsTab: View {
                     Text("Sentences").tag("sentences")
                 }
                 .disabled(!appState.cwReadbackEnabled)
+            }
+        }
+        .formStyle(.grouped)
+        .padding()
+    }
+}
+
+// MARK: - Recording
+
+private struct RecordingSettingsTab: View {
+    @AppStorage("recordingCodec") private var useHEVC: Bool = false
+    @AppStorage("recordingFrameRate") private var frameRate: Int = 30
+    @AppStorage("recordingScale") private var scaleFactor: Double = 1.0
+
+    var body: some View {
+        Form {
+            Section("Video Codec") {
+                Picker("Codec", selection: $useHEVC) {
+                    Text("H.264 (compatible)").tag(false)
+                    Text("HEVC / H.265 (smaller files)").tag(true)
+                }
+            }
+
+            Section("Quality") {
+                Picker("Frame Rate", selection: $frameRate) {
+                    Text("24 fps").tag(24)
+                    Text("30 fps").tag(30)
+                    Text("60 fps").tag(60)
+                }
+
+                Picker("Resolution Scale", selection: $scaleFactor) {
+                    Text("1x (window size)").tag(1.0)
+                    Text("0.75x (smaller file)").tag(0.75)
+                    Text("0.5x (compact)").tag(0.5)
+                }
+            }
+
+            Section {
+                Text("Recording captures the HamStation window with all audio (including Kokoro TTS). ScreenCaptureKit will prompt for permission on first use.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                Text("For live streaming, we recommend OBS Studio which can capture this window natively.")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
             }
         }
         .formStyle(.grouped)

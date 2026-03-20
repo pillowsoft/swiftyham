@@ -98,7 +98,7 @@ struct DemoScript {
                 id: 7,
                 title: "FT8 \u{2014} Decode the World",
                 subtitle: "Built-in FT8 decoder. See stations calling from around the world.",
-                section: .tools,
+                section: .ft8,
                 duration: 10,
                 setupAction: {
                     await DemoMockData.simulateFT8Decodes(to: appState)
@@ -134,7 +134,7 @@ struct DemoScript {
                 id: 10,
                 title: "Your AI Radio Partner",
                 subtitle: "Ask anything. It knows your station, your log, and the bands.",
-                section: .tools,
+                section: .aiAssistant,
                 duration: 12,
                 setupAction: {
                     await DemoMockData.simulateAIChat(to: appState)

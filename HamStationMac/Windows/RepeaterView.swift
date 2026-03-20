@@ -68,7 +68,7 @@ struct RepeaterView: View {
                         .tint(modeColor(repeater.mode))
                     }
                 }
-                .frame(minWidth: 400)
+                .frame(minWidth: 300)
 
                 // List + detail
                 VStack(spacing: 0) {
@@ -84,7 +84,7 @@ struct RepeaterView: View {
                         repeaterDetail(repeater)
                     }
                 }
-                .frame(minWidth: 280, idealWidth: 320)
+                .frame(minWidth: 250, idealWidth: 320)
             }
         }
         .navigationTitle("Repeater Directory")

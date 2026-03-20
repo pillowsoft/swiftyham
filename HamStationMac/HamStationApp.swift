@@ -36,7 +36,11 @@ struct HamStationApp: App {
             }
         }
         .defaultSize(width: 1400, height: 900)
-        .commands { HamStationCommands(appState: appState) }
+        .commands {
+            if let services {
+                HamStationCommands(appState: appState, services: services)
+            }
+        }
 
         WindowGroup("Logbook", id: "logbook") {
             Group {

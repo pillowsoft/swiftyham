@@ -24,6 +24,9 @@ struct MainWindow: View {
         .toolbar { HamStationToolbar() }
         .toolbar {
             ToolbarItem(placement: .automatic) {
+                RecordingControls()
+            }
+            ToolbarItem(placement: .automatic) {
                 Button {
                     if demoEngine?.isRunning == true {
                         demoEngine?.stop()
@@ -46,7 +49,7 @@ struct MainWindow: View {
                 DemoOverlay(engine: demoEngine)
             }
         }
-        .frame(minWidth: 1200, minHeight: 800)
+        .frame(minWidth: 1400, minHeight: 800)
         .onAppear {
             if appState.isDemoMode && demoEngine == nil {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
@@ -86,6 +89,12 @@ struct MainWindow: View {
             AntennaView()
         case .cwTraining:
             CWTrainingView()
+        case .satellite:
+            SatelliteView()
+        case .ft8:
+            FT8View()
+        case .aiAssistant:
+            AIAssistantView()
         case .tools:
             ToolsView()
         }
