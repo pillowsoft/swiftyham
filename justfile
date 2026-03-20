@@ -426,9 +426,9 @@ check-demo:
 check-tts:
     @python3 -c "import mlx_audio; print('Kokoro TTS (mlx-audio): Available')" 2>/dev/null || echo "Kokoro TTS: Not installed — run 'pip install mlx-audio'"
 
-# Install Kokoro TTS engine (mlx-audio)
+# Install Kokoro TTS engine (mlx-audio + all Kokoro dependencies)
 install-tts:
-    pip install mlx-audio
+    pip install "mlx-audio[kokoro]" misaki num2words phonemizer spacy
 
 # Count lines of code
 loc:

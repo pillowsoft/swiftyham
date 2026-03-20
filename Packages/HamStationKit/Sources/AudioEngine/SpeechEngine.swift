@@ -156,10 +156,11 @@ public final class SpeechEngine: NSObject, ObservableObject {
     private func speakWithKokoro(_ text: String) async {
         isSpeaking = true
 
-        let outputFile = tempDir.appendingPathComponent("speech-\(UUID().uuidString).wav")
+        // mlx_audio saves to <output>/audio_000.wav when given a directory path
+        let outputDir = tempDir.appendingPathComponent("speech-\(UUID().uuidString)")
         let voice = kokoroVoice
         let speed = kokoroSpeed
-        let outputPath = outputFile.path
+        let outputPath = outputDir.path
 
         let python = pythonPath
         let result = await Task.detached { () -> Int32 in
@@ -167,14 +168,15 @@ public final class SpeechEngine: NSObject, ObservableObject {
             process.executableURL = URL(fileURLWithPath: python)
             process.arguments = [
                 "-m", "mlx_audio.tts.generate",
-                "--model", "mlx-community/Kokoro-82M-bf16",
+                "--model", "prince-canuma/Kokoro-82M",
                 "--text", text,
                 "--voice", voice,
                 "--speed", String(speed),
                 "--output", outputPath,
             ]
             process.standardOutput = Pipe()
-            process.standardError = Pipe()
+            let errPipe = Pipe()
+            process.standardError = errPipe
 
             do {
                 try process.run()
@@ -185,26 +187,26 @@ public final class SpeechEngine: NSObject, ObservableObject {
             }
         }.value
 
-        guard result == 0 else {
-            speakWithSystem(text)
-            return
-        }
+        // mlx_audio outputs to <outputDir>/audio_000.wav
+        let wavFile = outputDir.appendingPathComponent("audio_000.wav")
 
-        guard FileManager.default.fileExists(atPath: outputFile.path) else {
+        guard result == 0, FileManager.default.fileExists(atPath: wavFile.path) else {
+            // Kokoro failed — fall back to system voice
             speakWithSystem(text)
             return
         }
 
         do {
-            let data = try Data(contentsOf: outputFile)
+            let data = try Data(contentsOf: wavFile)
             audioPlayer = try AVAudioPlayer(data: data)
             audioPlayer?.volume = volume
             audioPlayer?.delegate = self
             audioPlayer?.play()
 
+            // Clean up temp files after playback
             Task {
                 try? await Task.sleep(for: .seconds(30))
-                try? FileManager.default.removeItem(at: outputFile)
+                try? FileManager.default.removeItem(at: outputDir)
             }
         } catch {
             speakWithSystem(text)
