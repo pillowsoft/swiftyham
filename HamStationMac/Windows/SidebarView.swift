@@ -31,6 +31,9 @@ struct SidebarView: View {
             .foregroundStyle(Color(hex: "FF6A00"))
             .padding(.vertical, 8)
             .padding(.horizontal, 4)
+
+            // Extra padding so the button doesn't get clipped by the status bar overlay
+            Spacer().frame(height: 28)
         }
         .navigationSplitViewColumnWidth(min: 180, ideal: 220, max: 280)
     }

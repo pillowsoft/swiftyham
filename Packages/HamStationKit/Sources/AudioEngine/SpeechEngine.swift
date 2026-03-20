@@ -28,6 +28,7 @@ public final class SpeechEngine: NSObject, ObservableObject {
     private var audioPlayer: AVAudioPlayer?
     private var speechQueue: [String] = []
     private var isProcessingQueue: Bool = false
+    private var pythonPath: String = "/usr/bin/python3"  // resolved during availability check
     private var currentTask: Task<Void, Never>?
     private var completionHandler: (@MainActor () -> Void)?
 
@@ -45,25 +46,47 @@ public final class SpeechEngine: NSObject, ObservableObject {
     // MARK: - Availability Check
 
     public func checkKokoroAvailability() async {
-        let available = await Task.detached { () -> Bool in
-            let process = Process()
-            process.executableURL = URL(fileURLWithPath: "/usr/bin/env")
-            process.arguments = ["python3", "-c", "import mlx_audio; print('ok')"]
-            let pipe = Pipe()
-            process.standardOutput = pipe
-            process.standardError = Pipe()
+        // macOS GUI apps don't inherit shell PATH, so /usr/bin/env won't find conda/brew python.
+        // Search common Python locations for one that has mlx_audio installed.
+        let candidates = [
+            "\(NSHomeDirectory())/miniconda3/bin/python3",
+            "\(NSHomeDirectory())/anaconda3/bin/python3",
+            "\(NSHomeDirectory())/miniforge3/bin/python3",
+            "\(NSHomeDirectory())/.conda/bin/python3",
+            "/opt/homebrew/bin/python3",
+            "/usr/local/bin/python3",
+            "/usr/bin/python3",
+        ]
 
-            do {
-                try process.run()
-                process.waitUntilExit()
-                let output = String(data: pipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
-                return process.terminationStatus == 0 && output.contains("ok")
-            } catch {
-                return false
+        let found = await Task.detached { () -> String? in
+            for path in candidates {
+                guard FileManager.default.fileExists(atPath: path) else { continue }
+                let process = Process()
+                process.executableURL = URL(fileURLWithPath: path)
+                process.arguments = ["-c", "import mlx_audio; print('ok')"]
+                let pipe = Pipe()
+                process.standardOutput = pipe
+                process.standardError = Pipe()
+                do {
+                    try process.run()
+                    process.waitUntilExit()
+                    let output = String(data: pipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
+                    if process.terminationStatus == 0 && output.contains("ok") {
+                        return path
+                    }
+                } catch {
+                    continue
+                }
             }
+            return nil
         }.value
 
-        kokoroAvailable = available
+        if let path = found {
+            pythonPath = path
+            kokoroAvailable = true
+        } else {
+            kokoroAvailable = false
+        }
     }
 
     // MARK: - Public API
@@ -138,11 +161,12 @@ public final class SpeechEngine: NSObject, ObservableObject {
         let speed = kokoroSpeed
         let outputPath = outputFile.path
 
+        let python = pythonPath
         let result = await Task.detached { () -> Int32 in
             let process = Process()
-            process.executableURL = URL(fileURLWithPath: "/usr/bin/env")
+            process.executableURL = URL(fileURLWithPath: python)
             process.arguments = [
-                "python3", "-m", "mlx_audio.tts.generate",
+                "-m", "mlx_audio.tts.generate",
                 "--model", "mlx-community/Kokoro-82M-bf16",
                 "--text", text,
                 "--voice", voice,
