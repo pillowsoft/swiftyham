@@ -62,8 +62,17 @@ public struct AIPrivacySettings: Codable, Sendable, Equatable {
 
     /// Supported AI service providers.
     public enum AIProvider: String, Codable, Sendable, CaseIterable {
-        case anthropic
-        // Extensible for future providers
+        case local      // Qwen3 via MLX (preferred when RAM available)
+        case openRouter  // Claude via OpenRouter API
+        case anthropic   // Direct Anthropic API (legacy)
+
+        public var displayName: String {
+            switch self {
+            case .local: return "Local (Qwen3)"
+            case .openRouter: return "OpenRouter (Claude)"
+            case .anthropic: return "Anthropic (Direct)"
+            }
+        }
     }
 
     /// A human-readable summary of what context will be shared in the next AI request.

@@ -13,6 +13,11 @@ final class ServiceContainer: Observable {
     let awardsEngine: AwardsEngine
     let propagationDashboard: PropagationDashboard
 
+    // Log submission clients
+    let qrzLogbook: QRZLogbookClient
+    let clubLog: ClubLogClient
+    let eqsl: EQSLClient
+
     // Connected on demand
     private(set) var rigConnection: RigctldConnection?
     private(set) var clusterClient: ClusterClient?
@@ -31,6 +36,9 @@ final class ServiceContainer: Observable {
         self.dxccResolver = DXCCResolver()
         self.awardsEngine = AwardsEngine(database: database, resolver: dxccResolver)
         self.propagationDashboard = PropagationDashboard(networkService: networkService)
+        self.qrzLogbook = QRZLogbookClient()
+        self.clubLog = ClubLogClient()
+        self.eqsl = EQSLClient()
     }
 
     // MARK: - Rig Connection

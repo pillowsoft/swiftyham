@@ -18,6 +18,8 @@ struct SettingsView: View {
                 .tabItem { Label("Cluster", systemImage: "globe") }
             CallsignLookupSettingsTab()
                 .tabItem { Label("Callsign Lookup", systemImage: "person.text.rectangle") }
+            LogSubmissionSettingsTab()
+                .tabItem { Label("Log Upload", systemImage: "arrow.up.doc") }
             VoiceSettingsTab()
                 .tabItem { Label("Voice", systemImage: "waveform") }
             RecordingSettingsTab()
@@ -258,10 +260,81 @@ private struct CallsignLookupSettingsTab: View {
     }
 }
 
+// MARK: - Log Submission
+
+private struct LogSubmissionSettingsTab: View {
+    @State private var qrzLogbookKey: String = ""
+    @State private var clubLogEmail: String = ""
+    @State private var clubLogPassword: String = ""
+    @State private var clubLogCallsign: String = ""
+    @State private var eqslUsername: String = ""
+    @State private var eqslPassword: String = ""
+    @State private var autoUploadEnabled: Bool = false
+
+    var body: some View {
+        Form {
+            Section("QRZ Logbook") {
+                SecureField("API Key", text: $qrzLogbookKey)
+                    .font(.system(.body, design: .monospaced))
+                    .onChange(of: qrzLogbookKey) { _, val in
+                        try? KeychainHelper.save(key: "qrz_logbook_key", value: val)
+                    }
+                Text("Upload QSOs to your QRZ.com logbook. Get your API key from qrz.com/page/logbook_api.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Section("Club Log") {
+                TextField("Email", text: $clubLogEmail)
+                    .onChange(of: clubLogEmail) { _, val in
+                        try? KeychainHelper.save(key: "clublog_email", value: val)
+                    }
+                SecureField("Password", text: $clubLogPassword)
+                    .onChange(of: clubLogPassword) { _, val in
+                        try? KeychainHelper.save(key: "clublog_password", value: val)
+                    }
+                TextField("Callsign", text: $clubLogCallsign)
+                    .font(.system(.body, design: .monospaced))
+                    .onChange(of: clubLogCallsign) { _, val in
+                        try? KeychainHelper.save(key: "clublog_callsign", value: val)
+                    }
+                Text("Upload QSOs to clublog.org for DXCC and OQRS matching.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Section("eQSL") {
+                TextField("Username", text: $eqslUsername)
+                    .onChange(of: eqslUsername) { _, val in
+                        try? KeychainHelper.save(key: "eqsl_username", value: val)
+                    }
+                SecureField("Password", text: $eqslPassword)
+                    .onChange(of: eqslPassword) { _, val in
+                        try? KeychainHelper.save(key: "eqsl_password", value: val)
+                    }
+                Text("Send electronic QSL cards via eqsl.cc.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .formStyle(.grouped)
+        .padding()
+        .onAppear {
+            qrzLogbookKey = KeychainHelper.load(key: "qrz_logbook_key") ?? ""
+            clubLogEmail = KeychainHelper.load(key: "clublog_email") ?? ""
+            clubLogPassword = KeychainHelper.load(key: "clublog_password") ?? ""
+            clubLogCallsign = KeychainHelper.load(key: "clublog_callsign") ?? ""
+            eqslUsername = KeychainHelper.load(key: "eqsl_username") ?? ""
+            eqslPassword = KeychainHelper.load(key: "eqsl_password") ?? ""
+        }
+    }
+}
+
 // MARK: - AI
 
 private struct AISettingsTab: View {
     @State private var aiEnabled: Bool = false
+    @State private var provider: AIPrivacySettings.AIProvider = .local
     @State private var includeCallsign: Bool = true
     @State private var includeLocation: Bool = false
     @State private var includeAwardProgress: Bool = false
@@ -269,16 +342,59 @@ private struct AISettingsTab: View {
     @State private var apiKey: String = ""
     @State private var enableNLLogging: Bool = false
     @State private var enableSmartAnalysis: Bool = false
+    @State private var availableRAM: String = ""
 
     var body: some View {
         Form {
             Section("AI Assistant") {
                 Toggle("Enable AI Assistant", isOn: $aiEnabled)
-                    .help("Requires an Anthropic API key. AI context is sent only when you ask a question.")
 
                 if aiEnabled {
-                    SecureField("Anthropic API Key", text: $apiKey)
-                        .font(.system(.body, design: .monospaced))
+                    Picker("Backend", selection: $provider) {
+                        ForEach(AIPrivacySettings.AIProvider.allCases, id: \.self) { p in
+                            Text(p.displayName).tag(p)
+                        }
+                    }
+
+                    switch provider {
+                    case .local:
+                        HStack {
+                            Image(systemName: "desktopcomputer")
+                                .foregroundStyle(.green)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Qwen3 via MLX — runs entirely on your Mac")
+                                    .font(.caption)
+                                Text("Available RAM: \(availableRAM)")
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        Text("Requires ~8 GB free RAM for the 4B model. No data leaves your Mac.")
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+
+                    case .openRouter:
+                        SecureField("OpenRouter API Key", text: $apiKey)
+                            .font(.system(.body, design: .monospaced))
+                            .onChange(of: apiKey) { _, val in
+                                try? KeychainHelper.save(key: "openrouter_api_key", value: val)
+                            }
+                        Text("Uses Claude via openrouter.ai. Get your key at openrouter.ai/keys.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+
+                    case .anthropic:
+                        SecureField("Anthropic API Key", text: $apiKey)
+                            .font(.system(.body, design: .monospaced))
+                            .onChange(of: apiKey) { _, val in
+                                try? KeychainHelper.save(key: "anthropic_api_key", value: val)
+                            }
+                        Text("Direct Anthropic API. Get your key at console.anthropic.com.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Divider()
 
                     Text("Data shared with AI (per request):")
                         .font(.caption)
@@ -308,6 +424,15 @@ private struct AISettingsTab: View {
         }
         .formStyle(.grouped)
         .padding()
+        .onAppear {
+            let ram = ProcessInfo.processInfo.physicalMemory
+            availableRAM = String(format: "%.0f GB", Double(ram) / 1_073_741_824)
+            // Default to local if enough RAM, otherwise suggest OpenRouter
+            if ram < 16_000_000_000 && provider == .local {
+                provider = .openRouter
+            }
+            apiKey = KeychainHelper.load(key: provider == .openRouter ? "openrouter_api_key" : "anthropic_api_key") ?? ""
+        }
     }
 }
 

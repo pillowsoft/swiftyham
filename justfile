@@ -452,6 +452,10 @@ test-adif-converter:
 check-adif-converter:
     cd Packages/HamStationKit && swiftc -parse -swift-version 6 Sources/ADIF/ADIFConverter.swift Sources/ADIF/ADIFRecord.swift Sources/ADIF/ADIFField.swift Sources/ADIF/ADIFDateFormatter.swift Sources/Models/QSO.swift Sources/Models/QSOExtended.swift Sources/Models/Band.swift Sources/Models/OperatingMode.swift Sources/Utilities/FrequencyFormatter.swift && echo "ADIFConverter: OK"
 
+# Syntax-check log submission clients (Swift 6 strict)
+check-logsubmit:
+    cd Packages/HamStationKit && swiftc -parse -swift-version 6 -target arm64-apple-macosx15.0 -sdk $(xcrun --show-sdk-path --sdk macosx) Sources/Networking/QRZLogbookClient.swift Sources/Networking/ClubLogClient.swift Sources/Networking/EQSLClient.swift Sources/Networking/POTAUploadHelper.swift Sources/Networking/KeychainHelper.swift Sources/Networking/ResilientClient.swift Sources/ADIF/ADIFConverter.swift Sources/ADIF/ADIFExporter.swift Sources/ADIF/ADIFRecord.swift Sources/ADIF/ADIFField.swift Sources/ADIF/ADIFDateFormatter.swift Sources/Models/QSO.swift Sources/Models/QSOExtended.swift Sources/Models/Band.swift Sources/Models/OperatingMode.swift Sources/Utilities/FrequencyFormatter.swift && echo "Log submission sources: OK"
+
 # Count lines of code
 loc:
     @find Packages/HamStationKit/Sources -name "*.swift" | xargs wc -l | tail -1

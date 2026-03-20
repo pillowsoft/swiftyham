@@ -196,6 +196,7 @@ final class AppState {
 
     // User profile (from first-run wizard / UserDefaults)
     var operatorCallsign: String = "N0CALL"
+    var operatorName: String = ""
     var licenseClass: String = "Extra"
     var gridSquare: String = "FN31pr"
 
@@ -224,6 +225,7 @@ final class AppState {
     // MARK: - Persistence via UserDefaults
 
     private static let callsignKey = "operatorCallsign"
+    private static let nameKey = "operatorName"
     private static let licenseKey = "licenseClass"
     private static let gridKey = "gridSquare"
     private static let onboardingKey = "hasCompletedOnboarding"
@@ -238,6 +240,9 @@ final class AppState {
         if let call = defaults.string(forKey: Self.callsignKey), !call.isEmpty {
             operatorCallsign = call
         }
+        if let name = defaults.string(forKey: Self.nameKey), !name.isEmpty {
+            operatorName = name
+        }
         if let lic = defaults.string(forKey: Self.licenseKey), !lic.isEmpty {
             licenseClass = lic
         }
@@ -251,6 +256,7 @@ final class AppState {
     func saveToDefaults() {
         let defaults = UserDefaults.standard
         defaults.set(operatorCallsign, forKey: Self.callsignKey)
+        defaults.set(operatorName, forKey: Self.nameKey)
         defaults.set(licenseClass, forKey: Self.licenseKey)
         defaults.set(gridSquare, forKey: Self.gridKey)
         defaults.set(hasCompletedOnboarding, forKey: Self.onboardingKey)

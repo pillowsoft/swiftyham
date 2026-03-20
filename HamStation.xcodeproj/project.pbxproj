@@ -23,6 +23,7 @@
 		44252DD7733B5364BBEDCA2B /* RepeaterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FEFA8C54D651A320087DF2 /* RepeaterView.swift */; };
 		4F2F5FB75421BFDF2C2CB90C /* CWTrainingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688BAE61F56D2822EF3344EF /* CWTrainingView.swift */; };
 		5864D8185FE42321471E0DFE /* APRSView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 143F636F23047A5BE5711524 /* APRSView.swift */; };
+		623B638DFC9CF78562BEBE86 /* GreatCircleMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C156EFC86964C3C1C32F5BEC /* GreatCircleMapView.swift */; };
 		676916A05D712F76EA0D0FDF /* HamStationKit in Frameworks */ = {isa = PBXBuildFile; productRef = 7B87D318E9CCAEDA91F2FCC9 /* HamStationKit */; };
 		78DAAD095B0E31832F5C69C5 /* SatelliteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB07F6DC74137F3CC81766DA /* SatelliteView.swift */; };
 		79006EFD597E5FFD8D3B35D7 /* InspectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7325898D53D06731BE49C3D /* InspectorView.swift */; };
@@ -31,6 +32,7 @@
 		906D072D9CB418571B55A4ED /* ServiceContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921D7A91548B00041AC1CF14 /* ServiceContainer.swift */; };
 		9C19B37AFC4BB5A9BCAA0334 /* MainWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B09EBEFF15C9F4EE52461946 /* MainWindow.swift */; };
 		9DD1AC3A354F1A0608BBEA4B /* DemoEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD079B87BA2133B344A6AF9B /* DemoEngine.swift */; };
+		B3BECC62227E4C786C3E9112 /* AudioSpectrumView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 658C57E7DE00A71FC4C46B07 /* AudioSpectrumView.swift */; };
 		B643F23A2A905CF087449EBA /* BackgroundTasks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41B977252F3358C01B120601 /* BackgroundTasks.swift */; };
 		BD332A9C9A24638F5E3A965A /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C91CA7C1F0E9D2450E96B7F5 /* SidebarView.swift */; };
 		C03C770B4CA6A2A51D164803 /* ToolbarContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90313EC1E6ECA67DAFA55296 /* ToolbarContent.swift */; };
@@ -62,6 +64,7 @@
 		3797CD51E01B264BBD19ABED /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		41B70A1F08D8C32C3D05153F /* MenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarView.swift; sourceTree = "<group>"; };
 		41B977252F3358C01B120601 /* BackgroundTasks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundTasks.swift; sourceTree = "<group>"; };
+		658C57E7DE00A71FC4C46B07 /* AudioSpectrumView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioSpectrumView.swift; sourceTree = "<group>"; };
 		688BAE61F56D2822EF3344EF /* CWTrainingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CWTrainingView.swift; sourceTree = "<group>"; };
 		6FB97B8D82FE9F9B9F6F75D0 /* AntennaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AntennaView.swift; sourceTree = "<group>"; };
 		7AA7104501BD635EA2C42D69 /* HamStationKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = HamStationKit; path = Packages/HamStationKit; sourceTree = SOURCE_ROOT; };
@@ -77,6 +80,7 @@
 		AD079B87BA2133B344A6AF9B /* DemoEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoEngine.swift; sourceTree = "<group>"; };
 		B09EBEFF15C9F4EE52461946 /* MainWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainWindow.swift; sourceTree = "<group>"; };
 		B40C2CED81A9EE1B99A42415 /* StatusBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBar.swift; sourceTree = "<group>"; };
+		C156EFC86964C3C1C32F5BEC /* GreatCircleMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GreatCircleMapView.swift; sourceTree = "<group>"; };
 		C3BD093D5DF5F4C2E9276827 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		C588717002051DEAE99E7E42 /* HamStationCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HamStationCommands.swift; sourceTree = "<group>"; };
 		C91CA7C1F0E9D2450E96B7F5 /* SidebarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarView.swift; sourceTree = "<group>"; };
@@ -108,6 +112,7 @@
 				1CDF5C1B983941F63A337F7F /* AIAssistantView.swift */,
 				6FB97B8D82FE9F9B9F6F75D0 /* AntennaView.swift */,
 				143F636F23047A5BE5711524 /* APRSView.swift */,
+				658C57E7DE00A71FC4C46B07 /* AudioSpectrumView.swift */,
 				FFEAB7D482D643312649A2C5 /* AwardsView.swift */,
 				27EFBEA948BD73BED3327508 /* BandMapView.swift */,
 				C9D61FE973D24B0432AE8EB9 /* ContestView.swift */,
@@ -115,6 +120,7 @@
 				363541D89C3F16A43ABB3705 /* DXClusterView.swift */,
 				E7CE3F04972118DCF2F357F7 /* EmCommView.swift */,
 				F2310138478F74E84FF70C32 /* FT8View.swift */,
+				C156EFC86964C3C1C32F5BEC /* GreatCircleMapView.swift */,
 				C588717002051DEAE99E7E42 /* HamStationCommands.swift */,
 				D7325898D53D06731BE49C3D /* InspectorView.swift */,
 				ED8A45E88A4BC5E8335E4B2A /* LogbookView.swift */,
@@ -263,6 +269,7 @@
 				5864D8185FE42321471E0DFE /* APRSView.swift in Sources */,
 				F5C927C175143C9A636C116B /* AntennaView.swift in Sources */,
 				F112B36CAC1B5157F7E2EE11 /* AppState.swift in Sources */,
+				B3BECC62227E4C786C3E9112 /* AudioSpectrumView.swift in Sources */,
 				1A1BDA41E1736B8D37189A7C /* AwardsView.swift in Sources */,
 				B643F23A2A905CF087449EBA /* BackgroundTasks.swift in Sources */,
 				FEB030E4F74E6A0F3FD151A0 /* BandMapView.swift in Sources */,
@@ -277,6 +284,7 @@
 				34FDE74B347A412055F3FE26 /* EmCommView.swift in Sources */,
 				F34EF2970AD7E50C4BDEFBB0 /* FT8View.swift in Sources */,
 				FD4CC07B9FC979D63B9A1246 /* FirstRunWizard.swift in Sources */,
+				623B638DFC9CF78562BEBE86 /* GreatCircleMapView.swift in Sources */,
 				04F4A2DEAD1267F496917F91 /* HamStationApp.swift in Sources */,
 				8BCCBB6ACB13402FBFA3D5B8 /* HamStationCommands.swift in Sources */,
 				79006EFD597E5FFD8D3B35D7 /* InspectorView.swift in Sources */,

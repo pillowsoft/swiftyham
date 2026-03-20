@@ -227,9 +227,15 @@ struct LogbookView: View {
                         }
                     }
                     Divider()
-                    Button("LoTW QSL") {}
-                    Button("eQSL") {}
-                    Button("Paper QSL Sent") {}
+                    Button("Upload to QRZ Logbook") {
+                        Task { await uploadToQRZ(qsoId: selectedId) }
+                    }
+                    Button("Upload to eQSL") {
+                        Task { await uploadToEQSL(qsoId: selectedId) }
+                    }
+                    Button("Upload to Club Log") {
+                        Task { await uploadToClubLog(qsoId: selectedId) }
+                    }
                     Divider()
                     Button("Delete", role: .destructive) {
                         if let vm = viewModel {
@@ -332,6 +338,41 @@ struct LogbookView: View {
         .padding(.vertical, 6)
         .background(Color.accentColor.opacity(0.1))
         .foregroundStyle(.secondary)
+    }
+
+    // MARK: - Log Submission
+
+    private func uploadToQRZ(qsoId: UUID) async {
+        guard let apiKey = KeychainHelper.load(key: "qrz_logbook_key"), !apiKey.isEmpty else { return }
+        guard let qso = try? await services.database.fetchQSO(id: qsoId) else { return }
+        do {
+            try await services.qrzLogbook.submit(qso: qso, apiKey: apiKey)
+        } catch {
+            print("QRZ upload failed: \(error)")
+        }
+    }
+
+    private func uploadToEQSL(qsoId: UUID) async {
+        guard let username = KeychainHelper.load(key: "eqsl_username"), !username.isEmpty,
+              let password = KeychainHelper.load(key: "eqsl_password"), !password.isEmpty else { return }
+        guard let qso = try? await services.database.fetchQSO(id: qsoId) else { return }
+        do {
+            let _ = try await services.eqsl.submit(qsos: [qso], username: username, password: password)
+        } catch {
+            print("eQSL upload failed: \(error)")
+        }
+    }
+
+    private func uploadToClubLog(qsoId: UUID) async {
+        guard let email = KeychainHelper.load(key: "clublog_email"), !email.isEmpty,
+              let password = KeychainHelper.load(key: "clublog_password"), !password.isEmpty,
+              let callsign = KeychainHelper.load(key: "clublog_callsign"), !callsign.isEmpty else { return }
+        guard let qso = try? await services.database.fetchQSO(id: qsoId) else { return }
+        do {
+            let _ = try await services.clubLog.submit(qsos: [qso], email: email, password: password, callsign: callsign)
+        } catch {
+            print("Club Log upload failed: \(error)")
+        }
     }
 
     // MARK: - Filter Popover

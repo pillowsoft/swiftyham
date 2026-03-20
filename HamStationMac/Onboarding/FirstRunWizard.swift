@@ -498,6 +498,7 @@ struct FirstRunWizard: View {
 
             Button {
                 appState.operatorCallsign = callsign.isEmpty ? "N0CALL" : callsign
+                appState.operatorName = operatorName
                 appState.licenseClass = licenseClass
                 appState.gridSquare = gridSquare
                 appState.hasCompletedOnboarding = true
@@ -529,6 +530,14 @@ struct FirstRunWizard: View {
 
             Spacer()
 
+            Button("Skip Setup") {
+                appState.hasCompletedOnboarding = true
+                appState.saveToDefaults()
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(.secondary)
+            .font(.caption)
+
             Button("Next") {
                 withAnimation {
                     if let next = WizardStep(rawValue: currentStep.rawValue + 1) {
@@ -547,8 +556,9 @@ struct FirstRunWizard: View {
 
     private func validateCallsign(_ call: String) -> Bool {
         guard !call.isEmpty else { return true }
-        // Basic validation: 1-2 letter prefix + digit + 1-3 letter suffix
-        let pattern = #"^[A-Z]{1,2}\d[A-Z]{1,3}$"#
+        // Accepts international callsigns: optional prefix digit, 1-3 letter/digit prefix,
+        // at least one digit, 1-4 letter suffix, optional /portable suffix
+        let pattern = #"^[A-Z0-9]{1,4}\d[A-Z]{1,4}(/[A-Z0-9]+)?$"#
         return call.uppercased().range(of: pattern, options: .regularExpression) != nil
     }
 
