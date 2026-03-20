@@ -105,15 +105,19 @@ public final class SpeechEngine: NSObject, ObservableObject {
         speak(text)
     }
 
-    /// Speak text and wait until playback finishes. Returns when audio is done.
+    /// Speak text and wait until playback finishes. Returns only after audio completes.
     public func speakAndWait(_ text: String) async {
         stop()
-        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
-            self.completionHandler = {
-                continuation.resume()
-            }
-            currentTask = Task {
-                await speakAsync(text)
+        // Start generation + playback
+        await speakAsync(text)
+        // Now wait for the audio to actually finish playing
+        // The delegate (AVAudioPlayerDelegate or AVSpeechSynthesizerDelegate) will
+        // fire the completion handler when playback ends
+        if isSpeaking {
+            await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+                self.completionHandler = {
+                    continuation.resume()
+                }
             }
         }
     }
