@@ -10,12 +10,14 @@
 		04F4A2DEAD1267F496917F91 /* HamStationApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2B17B6BF54D282D059E3543 /* HamStationApp.swift */; };
 		068F254FCC71DEDD086A7327 /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41B70A1F08D8C32C3D05153F /* MenuBarView.swift */; };
 		0870CAF8DC3DA49C8800D87D /* ContestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9D61FE973D24B0432AE8EB9 /* ContestView.swift */; };
+		08CDDFBC65F3B6C8FE133A1A /* DemoOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01536BB9600AE3613C114FEF /* DemoOverlay.swift */; };
 		0B212B9653A4BAC0E9F85B6F /* AIAssistantView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CDF5C1B983941F63A337F7F /* AIAssistantView.swift */; };
 		18F24155F94D11ABA7F3F9E4 /* PropagationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18DFA358F28EB058F7AFFC1F /* PropagationView.swift */; };
 		1A1BDA41E1736B8D37189A7C /* AwardsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFEAB7D482D643312649A2C5 /* AwardsView.swift */; };
 		2CEC2BBA9C8D0909873B3B83 /* LogbookView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED8A45E88A4BC5E8335E4B2A /* LogbookView.swift */; };
 		34FDE74B347A412055F3FE26 /* EmCommView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7CE3F04972118DCF2F357F7 /* EmCommView.swift */; };
 		365F31158E37BACFB8DD1277 /* ToolsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A1246D6CF9F044591326ECC /* ToolsView.swift */; };
+		3CC54DAEEE58093E2DA9A351 /* DemoMockData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22FBBBBC1964E48A33D40322 /* DemoMockData.swift */; };
 		3F489E16A004F4F90D83B5E5 /* StatusBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40C2CED81A9EE1B99A42415 /* StatusBar.swift */; };
 		40CE63DD0585BA32475E2EE2 /* ColorHex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C0A690529486F6DF224074A /* ColorHex.swift */; };
 		44252DD7733B5364BBEDCA2B /* RepeaterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FEFA8C54D651A320087DF2 /* RepeaterView.swift */; };
@@ -28,9 +30,11 @@
 		8BCCBB6ACB13402FBFA3D5B8 /* HamStationCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = C588717002051DEAE99E7E42 /* HamStationCommands.swift */; };
 		906D072D9CB418571B55A4ED /* ServiceContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921D7A91548B00041AC1CF14 /* ServiceContainer.swift */; };
 		9C19B37AFC4BB5A9BCAA0334 /* MainWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B09EBEFF15C9F4EE52461946 /* MainWindow.swift */; };
+		9DD1AC3A354F1A0608BBEA4B /* DemoEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD079B87BA2133B344A6AF9B /* DemoEngine.swift */; };
 		B643F23A2A905CF087449EBA /* BackgroundTasks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41B977252F3358C01B120601 /* BackgroundTasks.swift */; };
 		BD332A9C9A24638F5E3A965A /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C91CA7C1F0E9D2450E96B7F5 /* SidebarView.swift */; };
 		C03C770B4CA6A2A51D164803 /* ToolbarContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90313EC1E6ECA67DAFA55296 /* ToolbarContent.swift */; };
+		C292278A8624C12BC182013E /* DemoScript.swift in Sources */ = {isa = PBXBuildFile; fileRef = A84B8F6B4C5FEAADB726AA98 /* DemoScript.swift */; };
 		C63A8E0FE829CF78DED25422 /* DXClusterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363541D89C3F16A43ABB3705 /* DXClusterView.swift */; };
 		E3AC60C49493644C872AE681 /* SOTAPOTAView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 078BE951D14B0601A2C71ACA /* SOTAPOTAView.swift */; };
 		F112B36CAC1B5157F7E2EE11 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3BD093D5DF5F4C2E9276827 /* AppState.swift */; };
@@ -41,11 +45,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		01536BB9600AE3613C114FEF /* DemoOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoOverlay.swift; sourceTree = "<group>"; };
 		078BE951D14B0601A2C71ACA /* SOTAPOTAView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SOTAPOTAView.swift; sourceTree = "<group>"; };
 		143F636F23047A5BE5711524 /* APRSView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APRSView.swift; sourceTree = "<group>"; };
 		15FEFA8C54D651A320087DF2 /* RepeaterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepeaterView.swift; sourceTree = "<group>"; };
 		18DFA358F28EB058F7AFFC1F /* PropagationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PropagationView.swift; sourceTree = "<group>"; };
 		1CDF5C1B983941F63A337F7F /* AIAssistantView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIAssistantView.swift; sourceTree = "<group>"; };
+		22FBBBBC1964E48A33D40322 /* DemoMockData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoMockData.swift; sourceTree = "<group>"; };
 		27EFBEA948BD73BED3327508 /* BandMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BandMapView.swift; sourceTree = "<group>"; };
 		2A1246D6CF9F044591326ECC /* ToolsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolsView.swift; sourceTree = "<group>"; };
 		31364F17BBE8F93ABE9EE48A /* HamStation.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = HamStation.entitlements; sourceTree = "<group>"; };
@@ -63,6 +69,8 @@
 		9BD84C8888F586BD32EE2EA5 /* FirstRunWizard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstRunWizard.swift; sourceTree = "<group>"; };
 		A28D9F1352506CB3B14A79D8 /* HamStation.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HamStation.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A2B17B6BF54D282D059E3543 /* HamStationApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HamStationApp.swift; sourceTree = "<group>"; };
+		A84B8F6B4C5FEAADB726AA98 /* DemoScript.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoScript.swift; sourceTree = "<group>"; };
+		AD079B87BA2133B344A6AF9B /* DemoEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoEngine.swift; sourceTree = "<group>"; };
 		B09EBEFF15C9F4EE52461946 /* MainWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainWindow.swift; sourceTree = "<group>"; };
 		B40C2CED81A9EE1B99A42415 /* StatusBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBar.swift; sourceTree = "<group>"; };
 		C3BD093D5DF5F4C2E9276827 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
@@ -152,6 +160,17 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		9838955F59B5C6DC988FC351 /* Demo */ = {
+			isa = PBXGroup;
+			children = (
+				AD079B87BA2133B344A6AF9B /* DemoEngine.swift */,
+				22FBBBBC1964E48A33D40322 /* DemoMockData.swift */,
+				01536BB9600AE3613C114FEF /* DemoOverlay.swift */,
+				A84B8F6B4C5FEAADB726AA98 /* DemoScript.swift */,
+			);
+			path = Demo;
+			sourceTree = "<group>";
+		};
 		AAE95CC03ED13AE4E4460902 /* HamStationMac */ = {
 			isa = PBXGroup;
 			children = (
@@ -161,6 +180,7 @@
 				31364F17BBE8F93ABE9EE48A /* HamStation.entitlements */,
 				A2B17B6BF54D282D059E3543 /* HamStationApp.swift */,
 				921D7A91548B00041AC1CF14 /* ServiceContainer.swift */,
+				9838955F59B5C6DC988FC351 /* Demo */,
 				5BF32DA8D98E8AC46A58699E /* Onboarding */,
 				14804FF10D6260761358931F /* Windows */,
 			);
@@ -241,6 +261,10 @@
 				40CE63DD0585BA32475E2EE2 /* ColorHex.swift in Sources */,
 				0870CAF8DC3DA49C8800D87D /* ContestView.swift in Sources */,
 				C63A8E0FE829CF78DED25422 /* DXClusterView.swift in Sources */,
+				9DD1AC3A354F1A0608BBEA4B /* DemoEngine.swift in Sources */,
+				3CC54DAEEE58093E2DA9A351 /* DemoMockData.swift in Sources */,
+				08CDDFBC65F3B6C8FE133A1A /* DemoOverlay.swift in Sources */,
+				C292278A8624C12BC182013E /* DemoScript.swift in Sources */,
 				34FDE74B347A412055F3FE26 /* EmCommView.swift in Sources */,
 				FD4CC07B9FC979D63B9A1246 /* FirstRunWizard.swift in Sources */,
 				04F4A2DEAD1267F496917F91 /* HamStationApp.swift in Sources */,

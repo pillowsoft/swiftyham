@@ -7,6 +7,7 @@ import HamStationKit
 struct MainWindow: View {
     @Environment(AppState.self) var appState
     @State private var inspectorIsPresented = true
+    @State private var demoEngine: DemoEngine?
 
     var body: some View {
         @Bindable var state = appState
@@ -21,7 +22,30 @@ struct MainWindow: View {
                 }
         }
         .toolbar { HamStationToolbar() }
+        .toolbar {
+            ToolbarItem(placement: .automatic) {
+                Button {
+                    if demoEngine?.isRunning == true {
+                        demoEngine?.stop()
+                        demoEngine = nil
+                    } else {
+                        startDemo()
+                    }
+                } label: {
+                    Label(
+                        demoEngine?.isRunning == true ? "Stop Demo" : "Demo",
+                        systemImage: demoEngine?.isRunning == true ? "stop.fill" : "play.fill"
+                    )
+                }
+                .tint(Color(hex: "FF6A00"))
+            }
+        }
         .overlay(alignment: .bottom) { StatusBar() }
+        .overlay {
+            if let demoEngine, demoEngine.isRunning {
+                DemoOverlay(engine: demoEngine)
+            }
+        }
         .frame(minWidth: 1200, minHeight: 800)
     }
 
@@ -53,6 +77,12 @@ struct MainWindow: View {
         case .tools:
             ToolsView()
         }
+    }
+
+    private func startDemo() {
+        let engine = DemoEngine(appState: appState)
+        demoEngine = engine
+        engine.start()
     }
 }
 

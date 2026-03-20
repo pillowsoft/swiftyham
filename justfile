@@ -393,6 +393,13 @@ check-globe:
         swiftc -parse -swift-version 6 -target arm64-apple-macosx15.0 -sdk $(xcrun --show-sdk-path --sdk macosx) "$$f" && echo "  $$f: OK" || echo "  $$f: FAILED"; \
     done
 
+# Syntax-check demo mode source files (Swift 6 strict)
+check-demo:
+    @echo "Checking demo sources..."
+    @for f in HamStationMac/Demo/*.swift; do \
+        swiftc -parse -swift-version 6 -target arm64-apple-macosx15.0 -sdk $(xcrun --show-sdk-path --sdk macosx) "$$f" && echo "  $$f: OK" || echo "  $$f: FAILED"; \
+    done
+
 # Count lines of code
 loc:
     @find Packages/HamStationKit/Sources -name "*.swift" | xargs wc -l | tail -1

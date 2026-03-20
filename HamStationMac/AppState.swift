@@ -31,6 +31,13 @@ struct DisplaySpot: Identifiable, Sendable {
     }
 }
 
+/// A single message in the demo AI chat simulation.
+struct DemoChatMessage: Identifiable, Sendable {
+    let id = UUID()
+    let role: String   // "user" or "assistant"
+    var text: String
+}
+
 // MARK: - HamStationKit Extensions for Views
 
 extension HamStationKit.RigState {
@@ -183,6 +190,11 @@ final class AppState {
 
     // Night mode
     var isNightMode: Bool = false
+
+    // Demo mode
+    var isDemoMode: Bool = false
+    var demoFT8Decodes: [String] = []
+    var demoChatMessages: [DemoChatMessage] = []
 
     // First-run
     var hasCompletedOnboarding: Bool = false
