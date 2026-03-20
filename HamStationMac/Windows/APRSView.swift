@@ -37,12 +37,13 @@ struct APRSView: View {
             // Left: Map
             mapPanel
                 .frame(minWidth: 400)
+                .layoutPriority(1)
 
             Divider()
 
             // Right: Tabs for messages, stations, weather
             rightPanel
-                .frame(minWidth: 300, idealWidth: 350)
+                .frame(minWidth: 280, idealWidth: 340, maxWidth: 420)
         }
         .toolbar {
             toolbarContent

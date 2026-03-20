@@ -38,12 +38,13 @@ struct ContestView: View {
                     qsoTable
                 }
                 .frame(minWidth: 500)
+                .layoutPriority(1)
 
                 Divider()
 
                 // Right: Score + multipliers
                 scorePanel
-                    .frame(minWidth: 250, idealWidth: 280)
+                    .frame(minWidth: 240, idealWidth: 280, maxWidth: 360)
             }
         }
         .navigationTitle("Contest: \(selectedContest)")

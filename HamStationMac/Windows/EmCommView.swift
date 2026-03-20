@@ -97,7 +97,7 @@ private struct ICSFormsListView: View {
                 }
                 .listStyle(.sidebar)
             }
-            .frame(minWidth: 220, idealWidth: 260)
+            .frame(minWidth: 220, idealWidth: 260, maxWidth: 300)
 
             Divider()
 

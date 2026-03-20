@@ -69,6 +69,7 @@ struct RepeaterView: View {
                     }
                 }
                 .frame(minWidth: 300)
+                .layoutPriority(1)
 
                 Divider()
 
@@ -86,7 +87,7 @@ struct RepeaterView: View {
                         repeaterDetail(repeater)
                     }
                 }
-                .frame(minWidth: 250, idealWidth: 320)
+                .frame(minWidth: 250, idealWidth: 320, maxWidth: 400)
             }
         }
         .navigationTitle("Repeater Directory")

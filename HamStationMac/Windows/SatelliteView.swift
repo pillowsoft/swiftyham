@@ -12,13 +12,13 @@ struct SatelliteView: View {
 
     var body: some View {
         HStack(spacing: 0) {
-            // Left: Pass table
+            // Left: Pass table — constrained so it doesn't starve the detail pane
             passTable
-                .frame(minWidth: 400, idealWidth: 500)
+                .frame(minWidth: 380, idealWidth: 480, maxWidth: 600)
 
             Divider()
 
-            // Right: Pass detail + Doppler
+            // Right: Pass detail + Doppler — gets remaining space
             VStack(spacing: 0) {
                 if let selectedPass = selectedPass {
                     passDetailView(selectedPass)
@@ -35,7 +35,8 @@ struct SatelliteView: View {
                 dopplerPanel
                     .frame(height: 140)
             }
-            .frame(minWidth: 350)
+            .frame(minWidth: 300)
+            .layoutPriority(1)
         }
         .navigationTitle("Satellite Tracking")
     }

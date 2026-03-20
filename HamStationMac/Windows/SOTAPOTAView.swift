@@ -31,6 +31,7 @@ struct SOTAPOTAView: View {
                 // Map
                 mapView
                     .frame(minWidth: 300)
+                    .layoutPriority(1)
 
                 Divider()
 
@@ -71,7 +72,7 @@ struct SOTAPOTAView: View {
                         detailView(for: itemId)
                     }
                 }
-                .frame(minWidth: 250, idealWidth: 350)
+                .frame(minWidth: 250, idealWidth: 350, maxWidth: 420)
             }
         }
         .navigationTitle("SOTA / POTA")
