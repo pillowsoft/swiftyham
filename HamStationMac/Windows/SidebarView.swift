@@ -9,13 +9,35 @@ struct SidebarView: View {
     var body: some View {
         @Bindable var state = appState
 
-        List(SidebarSection.allCases, selection: $state.selectedSection) { section in
-            Label(section.label, systemImage: section.icon)
-                .tag(section)
+        VStack(spacing: 0) {
+            List(SidebarSection.allCases, selection: $state.selectedSection) { section in
+                Label(section.label, systemImage: section.icon)
+                    .tag(section)
+            }
+            .listStyle(.sidebar)
+
+            Divider()
+
+            // Demo button — always visible at bottom of sidebar
+            Button {
+                NotificationCenter.default.post(name: .startDemo, object: nil)
+            } label: {
+                Label("Start Demo", systemImage: "play.circle.fill")
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(Color(hex: "FF6A00"))
+            .padding(.vertical, 8)
+            .padding(.horizontal, 4)
         }
-        .listStyle(.sidebar)
         .navigationSplitViewColumnWidth(min: 180, ideal: 220, max: 280)
     }
+}
+
+extension Notification.Name {
+    static let startDemo = Notification.Name("startDemo")
 }
 
 #Preview {

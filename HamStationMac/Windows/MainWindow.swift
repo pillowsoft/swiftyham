@@ -49,10 +49,14 @@ struct MainWindow: View {
         .frame(minWidth: 1200, minHeight: 800)
         .onAppear {
             if appState.isDemoMode && demoEngine == nil {
-                // Auto-start demo when coming from the wizard's "Try Demo" button
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     startDemo()
                 }
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .startDemo)) { _ in
+            if demoEngine?.isRunning != true {
+                startDemo()
             }
         }
     }
