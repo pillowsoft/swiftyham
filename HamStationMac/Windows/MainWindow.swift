@@ -21,6 +21,7 @@ struct MainWindow: View {
                         .inspectorColumnWidth(min: 250, ideal: 300, max: 400)
                 }
         }
+        .navigationSplitViewStyle(.balanced)
         .toolbar { HamStationToolbar() }
         .toolbar {
             ToolbarItem(placement: .automatic) {

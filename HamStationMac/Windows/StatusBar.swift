@@ -72,7 +72,7 @@ struct StatusBar: View {
                     .font(.caption2)
             }
         }
-        .padding(.horizontal, 12)
+        .padding(.horizontal, 20)
         .frame(height: 28)
         .background(.bar)
         .overlay(alignment: .top) {
