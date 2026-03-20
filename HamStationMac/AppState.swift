@@ -196,6 +196,13 @@ final class AppState {
     var demoFT8Decodes: [String] = []
     var demoChatMessages: [DemoChatMessage] = []
 
+    // Speech settings
+    var narrationEnabled: Bool = true
+    var cwReadbackEnabled: Bool = false
+    var cwReadbackMode: String = "words"
+    var ttsBackend: String = "auto"
+    var kokoroVoice: String = "af_heart"
+
     // First-run
     var hasCompletedOnboarding: Bool = false
 

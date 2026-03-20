@@ -17,6 +17,8 @@ final class DemoEngine {
     private var scenes: [DemoScene] = []
 
     let appState: AppState
+    let speechEngine = SpeechEngine()
+    var narrationEnabled: Bool = true
 
     // Snapshot of pre-demo state so we can restore it
     private var savedCallsign: String = ""
@@ -54,6 +56,7 @@ final class DemoEngine {
     func stop() {
         advanceTask?.cancel()
         setupTask?.cancel()
+        speechEngine.stop()
         isRunning = false
         currentScene = nil
         progress = 0
@@ -102,6 +105,15 @@ final class DemoEngine {
         // Run the scene's setup action (populates mock data)
         setupTask = Task {
             await scene.setupAction()
+        }
+
+        // Narrate the scene title and subtitle
+        if narrationEnabled {
+            Task {
+                try? await Task.sleep(for: .seconds(1.0))
+                guard !Task.isCancelled else { return }
+                speechEngine.speak("\(scene.title). \(scene.subtitle)")
+            }
         }
 
         // Animate progress and auto-advance

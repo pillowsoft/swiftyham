@@ -422,6 +422,14 @@ check-demo:
         swiftc -parse -swift-version 6 -target arm64-apple-macosx15.0 -sdk $(xcrun --show-sdk-path --sdk macosx) "$$f" && echo "  $$f: OK" || echo "  $$f: FAILED"; \
     done
 
+# Check if Kokoro TTS (mlx-audio) is installed
+check-tts:
+    @python3 -c "import mlx_audio; print('Kokoro TTS (mlx-audio): Available')" 2>/dev/null || echo "Kokoro TTS: Not installed — run 'pip install mlx-audio'"
+
+# Install Kokoro TTS engine (mlx-audio)
+install-tts:
+    pip install mlx-audio
+
 # Count lines of code
 loc:
     @find Packages/HamStationKit/Sources -name "*.swift" | xargs wc -l | tail -1

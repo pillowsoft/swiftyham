@@ -18,6 +18,8 @@ struct SettingsView: View {
                 .tabItem { Label("Cluster", systemImage: "globe") }
             CallsignLookupSettingsTab()
                 .tabItem { Label("Callsign Lookup", systemImage: "person.text.rectangle") }
+            VoiceSettingsTab()
+                .tabItem { Label("Voice", systemImage: "waveform") }
             AISettingsTab()
                 .tabItem { Label("AI", systemImage: "brain") }
             AboutTab()
@@ -300,6 +302,81 @@ private struct AISettingsTab: View {
                 Text("On-device features use Apple frameworks and Core ML. No data is sent to any cloud service.")
                     .font(.caption)
                     .foregroundStyle(.tertiary)
+            }
+        }
+        .formStyle(.grouped)
+        .padding()
+    }
+}
+
+// MARK: - Voice
+
+private struct VoiceSettingsTab: View {
+    @Environment(AppState.self) var appState
+    @StateObject private var speechEngine = SpeechEngine()
+
+    var body: some View {
+        @Bindable var state = appState
+
+        Form {
+            Section("Text-to-Speech Engine") {
+                Picker("Backend", selection: $state.ttsBackend) {
+                    Text("Auto (Best Available)").tag("auto")
+                    Text("Kokoro (MLX)").tag("kokoro")
+                    Text("System Voice").tag("system")
+                }
+                .onChange(of: appState.ttsBackend) { _, newValue in
+                    switch newValue {
+                    case "kokoro": speechEngine.preferredBackend = .kokoro
+                    case "system": speechEngine.preferredBackend = .system
+                    default: speechEngine.preferredBackend = .auto
+                    }
+                }
+
+                HStack {
+                    Image(systemName: speechEngine.kokoroAvailable ? "checkmark.circle.fill" : "xmark.circle")
+                        .foregroundStyle(speechEngine.kokoroAvailable ? .green : .orange)
+                    if speechEngine.kokoroAvailable {
+                        Text("Kokoro: Available")
+                            .font(.caption)
+                    } else {
+                        Text("Kokoro: Not installed — run `pip install mlx-audio`")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
+                Picker("Kokoro Voice", selection: $state.kokoroVoice) {
+                    ForEach(SpeechEngine.availableKokoroVoices(), id: \.id) { voice in
+                        Text("\(voice.name) — \(voice.description)")
+                            .tag(voice.id)
+                    }
+                }
+                .disabled(!speechEngine.kokoroAvailable && appState.ttsBackend != "system")
+                .onChange(of: appState.kokoroVoice) { _, newValue in
+                    speechEngine.kokoroVoice = newValue
+                }
+
+                Button("Test Voice") {
+                    speechEngine.kokoroVoice = appState.kokoroVoice
+                    speechEngine.speak("CQ CQ CQ, this is HamStation Pro, testing voice output.")
+                }
+                .buttonStyle(.bordered)
+            }
+
+            Section("Demo Narration") {
+                Toggle("Enable narration during demo", isOn: $state.narrationEnabled)
+            }
+
+            Section("CW Readback") {
+                Toggle("Enable CW decoded text readback", isOn: $state.cwReadbackEnabled)
+
+                Picker("Readback Mode", selection: $state.cwReadbackMode) {
+                    Text("Characters (NATO phonetic)").tag("characters")
+                    Text("Words").tag("words")
+                    Text("Sentences").tag("sentences")
+                }
+                .disabled(!appState.cwReadbackEnabled)
             }
         }
         .formStyle(.grouped)

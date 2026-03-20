@@ -70,6 +70,14 @@ struct DemoOverlay: View {
                         }
                         .buttonStyle(.plain)
 
+                        // Narration toggle
+                        Button(action: { engine.narrationEnabled.toggle() }) {
+                            Image(systemName: engine.narrationEnabled ? "speaker.wave.2.fill" : "speaker.slash.fill")
+                                .font(.title2)
+                        }
+                        .buttonStyle(.plain)
+                        .help(engine.narrationEnabled ? "Mute narration" : "Enable narration")
+
                         Divider()
                             .frame(height: 20)
                             .background(.white.opacity(0.3))
