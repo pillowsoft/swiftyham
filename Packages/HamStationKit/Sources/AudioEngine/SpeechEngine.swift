@@ -105,6 +105,19 @@ public final class SpeechEngine: NSObject, ObservableObject {
         speak(text)
     }
 
+    /// Speak text and wait until playback finishes. Returns when audio is done.
+    public func speakAndWait(_ text: String) async {
+        stop()
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            self.completionHandler = {
+                continuation.resume()
+            }
+            currentTask = Task {
+                await speakAsync(text)
+            }
+        }
+    }
+
     /// Queue multiple texts to speak in order.
     public func speakSequence(_ texts: [String]) {
         stop()

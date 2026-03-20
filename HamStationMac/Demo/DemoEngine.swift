@@ -77,6 +77,7 @@ final class DemoEngine {
     func next() {
         advanceTask?.cancel()
         setupTask?.cancel()
+        speechEngine.stop()
         let nextIndex = currentSceneIndex + 1
         if nextIndex < scenes.count {
             playScene(at: nextIndex)
@@ -88,6 +89,7 @@ final class DemoEngine {
     func previous() {
         advanceTask?.cancel()
         setupTask?.cancel()
+        speechEngine.stop()
         let prevIndex = max(0, currentSceneIndex - 1)
         playScene(at: prevIndex)
     }
@@ -96,6 +98,9 @@ final class DemoEngine {
         currentSceneIndex = index
         let scene = scenes[index]
         progress = 0
+
+        // Ensure scene has at least 12 seconds for Kokoro TTS to generate + play
+        let effectiveDuration = max(scene.duration, 12.0)
 
         withAnimation(.easeInOut(duration: 0.5)) {
             currentScene = scene
@@ -107,24 +112,32 @@ final class DemoEngine {
             await scene.setupAction()
         }
 
-        // Narrate the scene title and subtitle
-        if narrationEnabled {
-            Task {
-                try? await Task.sleep(for: .seconds(1.0))
-                guard !Task.isCancelled else { return }
-                speechEngine.speak("\(scene.title). \(scene.subtitle)")
-            }
-        }
-
-        // Animate progress and auto-advance
+        // Orchestrate: narrate first, then auto-advance after remaining time
         advanceTask = Task {
-            let steps = 120
-            let stepDuration = scene.duration / Double(steps)
+            // 1. Wait for animations to settle
+            try? await Task.sleep(for: .seconds(1.0))
+            if Task.isCancelled { return }
+
+            // 2. Speak narration and wait for it to finish
+            let narrationStart = Date()
+            if narrationEnabled {
+                await speechEngine.speakAndWait("\(scene.title). \(scene.subtitle)")
+            }
+            if Task.isCancelled { return }
+
+            // 3. Calculate remaining linger time after narration
+            let narrationElapsed = Date().timeIntervalSince(narrationStart)
+            let lingerTime = max(effectiveDuration - 1.0 - narrationElapsed, 3.0)
+
+            // 4. Animate progress over the linger period
+            let steps = 60
+            let stepDuration = lingerTime / Double(steps)
             for i in 1...steps {
                 try? await Task.sleep(for: .seconds(stepDuration))
                 if Task.isCancelled { return }
                 progress = Double(i) / Double(steps)
             }
+
             if !Task.isCancelled {
                 next()
             }

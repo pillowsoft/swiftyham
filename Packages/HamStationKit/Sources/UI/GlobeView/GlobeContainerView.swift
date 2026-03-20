@@ -19,6 +19,8 @@ public struct GlobeContainerView: View {
     @State private var globeScene = GlobeScene()
     @State private var isAutoRotating = true
     @State private var showGreyLine = true
+    @State private var showEarthTexture = true
+    @State private var earthTextureImage: NSImage?
     @State private var selectedOverlay: GlobeOverlay = .qsos
     @State private var tappedGrid: String?
 
@@ -50,6 +52,7 @@ public struct GlobeContainerView: View {
                 // Toggle controls
                 HStack(spacing: 12) {
                     Toggle("Grey Line", isOn: $showGreyLine)
+                    Toggle("Earth Texture", isOn: $showEarthTexture)
                     Toggle("Auto Rotate", isOn: $isAutoRotating)
                 }
                 .toggleStyle(.button)
@@ -81,6 +84,17 @@ public struct GlobeContainerView: View {
         .onAppear { setupGlobe() }
         .onChange(of: showGreyLine) { _, show in
             globeScene.greyLineNode.isHidden = !show
+        }
+        .onChange(of: showEarthTexture) { _, show in
+            globeScene.setEarthTexture(enabled: show, image: earthTextureImage)
+        }
+        .task {
+            if let image = await EarthTextureManager.shared.loadTexture() {
+                earthTextureImage = image
+                if showEarthTexture {
+                    globeScene.applyEarthTexture(image)
+                }
+            }
         }
     }
 

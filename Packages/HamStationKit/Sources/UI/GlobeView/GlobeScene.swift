@@ -43,6 +43,10 @@ public final class GlobeScene: @unchecked Sendable {
 
     private let globeRadius: CGFloat = 1.0
 
+    /// Whether the Earth texture is applied (vs dark procedural globe).
+    public private(set) var useEarthTexture: Bool = false
+    private var darkMaterial: SCNMaterial?
+
     // MARK: - Initialisation
 
     public init() {
@@ -85,6 +89,7 @@ public final class GlobeScene: @unchecked Sendable {
         sphere.firstMaterial = material
 
         globeNode = SCNNode(geometry: sphere)
+        darkMaterial = material
         scene.rootNode.addChildNode(globeNode)
 
         // --- Grid lines ---
@@ -108,6 +113,61 @@ public final class GlobeScene: @unchecked Sendable {
 
         // --- Background ---
         scene.background.contents = NSColor.black
+    }
+
+    // MARK: - Earth Texture
+
+    /// Apply a NASA Blue Marble texture image to the globe sphere.
+    public func applyEarthTexture(_ image: NSImage) {
+        guard let sphere = globeNode.geometry as? SCNSphere else { return }
+
+        let material = SCNMaterial()
+        material.diffuse.contents = image
+        material.diffuse.intensity = 0.75  // slightly dimmed so arcs/spots stand out
+        material.specular.contents = NSColor(white: 0.15, alpha: 1)
+        material.shininess = 0.2
+        material.lightingModel = .blinn
+        sphere.firstMaterial = material
+        useEarthTexture = true
+
+        // Raise continent outlines slightly so they render on top of the texture
+        if let continent = continentNode {
+            raiseContinentAltitude(continent)
+        }
+    }
+
+    /// Remove the Earth texture and restore the dark procedural globe.
+    public func removeEarthTexture() {
+        guard let sphere = globeNode.geometry as? SCNSphere,
+              let dark = darkMaterial else { return }
+        sphere.firstMaterial = dark
+        useEarthTexture = false
+    }
+
+    /// Toggle between Earth texture and dark globe.
+    public func setEarthTexture(enabled: Bool, image: NSImage?) {
+        if enabled, let image = image {
+            applyEarthTexture(image)
+        } else {
+            removeEarthTexture()
+        }
+    }
+
+    /// Raise continent outline positions slightly for visibility over texture.
+    private func raiseContinentAltitude(_ node: SCNNode) {
+        // Continent lines are already at altitude 0.003; bump to 0.006 when textured
+        for child in node.childNodes {
+            for seg in child.childNodes {
+                var pos = seg.position
+                let len = sqrt(pos.x * pos.x + pos.y * pos.y + pos.z * pos.z)
+                guard len > 0.001 else { continue }
+                let scale = CGFloat((Double(globeRadius) + 0.006) / Double(len))
+                pos.x *= scale
+                pos.y *= scale
+                pos.z *= scale
+                seg.position = pos
+            }
+        }
     }
 
     // MARK: - Coordinate Conversion
