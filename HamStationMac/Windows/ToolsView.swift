@@ -38,16 +38,18 @@ struct ToolsView: View {
                     section: .satellite
                 )
 
-                disabledToolCard(
-                    icon: "waveform",
+                activeToolCard(
+                    icon: "waveform.path",
                     title: "Audio Spectrum Analyzer",
-                    description: "Real-time audio spectrum display for monitoring receiver audio. Includes waterfall and peak hold modes."
+                    description: "Real-time audio spectrum display for monitoring receiver audio. Includes waterfall and peak hold modes.",
+                    section: .audioSpectrum
                 )
 
-                disabledToolCard(
+                activeToolCard(
                     icon: "map",
                     title: "Great Circle Map",
-                    description: "Azimuthal projection centered on your grid square showing beam headings and distances to DX stations."
+                    description: "Azimuthal projection centered on your grid square showing beam headings and distances to DX stations.",
+                    section: .greatCircleMap
                 )
 
                 Spacer()
@@ -92,41 +94,6 @@ struct ToolsView: View {
         .buttonStyle(.plain)
     }
 
-    private func disabledToolCard(icon: String, title: String, description: String) -> some View {
-        HStack(spacing: 16) {
-            Image(systemName: icon)
-                .font(.title)
-                .foregroundStyle(.tertiary)
-                .frame(width: 44)
-
-            VStack(alignment: .leading, spacing: 4) {
-                HStack {
-                    Text(title)
-                        .font(.headline)
-                        .foregroundStyle(.secondary)
-                    Spacer()
-                    Text("Coming Soon")
-                        .font(.caption2.bold())
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(.blue.opacity(0.1))
-                        .clipShape(RoundedRectangle(cornerRadius: 4))
-                        .foregroundStyle(.blue)
-                }
-                Text(description)
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
-            }
-        }
-        .padding()
-        .background(Color(nsColor: .controlBackgroundColor))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
-        .overlay(
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(Color(nsColor: .separatorColor), lineWidth: 1)
-        )
-        .opacity(0.6)
-    }
 }
 
 #Preview {

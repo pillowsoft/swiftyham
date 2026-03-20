@@ -97,6 +97,10 @@ struct MainWindow: View {
             FT8View()
         case .aiAssistant:
             AIAssistantView()
+        case .audioSpectrum:
+            AudioSpectrumView()
+        case .greatCircleMap:
+            GreatCircleMapView()
         case .tools:
             ToolsView()
         }
