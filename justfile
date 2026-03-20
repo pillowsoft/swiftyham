@@ -16,9 +16,31 @@ generate:
 build-app: generate
     xcodebuild build -project HamStation.xcodeproj -scheme HamStation -destination 'platform=macOS'
 
-# Run the macOS app
-run: build-app
-    open /Users/bpillow/Library/Developer/Xcode/DerivedData/HamStation-*/Build/Products/Debug/HamStation.app
+# Clean and build the macOS app
+build-app-clean: generate
+    xcodebuild clean build -project HamStation.xcodeproj -scheme HamStation -destination 'platform=macOS'
+
+# Run the macOS app (clean build to avoid stale binaries)
+run: build-app-clean
+    #!/usr/bin/env bash
+    APP=$(find ~/Library/Developer/Xcode/DerivedData/HamStation-*/Build/Products/Debug/HamStation.app -maxdepth 0 2>/dev/null | head -1)
+    if [ -n "$APP" ]; then
+        open "$APP"
+    else
+        echo "ERROR: App not found in DerivedData. Build may have failed."
+        exit 1
+    fi
+
+# Run without cleaning (faster, uses cached build)
+run-fast: build-app
+    #!/usr/bin/env bash
+    APP=$(find ~/Library/Developer/Xcode/DerivedData/HamStation-*/Build/Products/Debug/HamStation.app -maxdepth 0 2>/dev/null | head -1)
+    if [ -n "$APP" ]; then
+        open "$APP"
+    else
+        echo "ERROR: App not found in DerivedData. Build may have failed."
+        exit 1
+    fi
 
 # Open in Xcode (for running with previews/debugger)
 open: generate
