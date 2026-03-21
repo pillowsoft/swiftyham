@@ -10,6 +10,9 @@ struct AudioSpectrumView: View {
     @State private var selectedMode: SpectrumMode = .waterfall
     @State private var peakHold = false
     @State private var spectrumData: [Float] = Array(repeating: -120, count: 2048)
+    @State private var audioEngine: AudioEngine?
+    @State private var fftProcessor: FFTProcessor?
+    @State private var fftStreamTask: Task<Void, Never>?
 
     enum SpectrumMode: String, CaseIterable {
         case spectrum = "Spectrum"
@@ -47,7 +50,11 @@ struct AudioSpectrumView: View {
     private var controlBar: some View {
         HStack(spacing: 16) {
             Button {
-                isRunning.toggle()
+                if isRunning {
+                    stopAudio()
+                } else {
+                    startAudio()
+                }
             } label: {
                 Label(isRunning ? "Stop" : "Start", systemImage: isRunning ? "stop.fill" : "play.fill")
             }
@@ -195,6 +202,40 @@ struct AudioSpectrumView: View {
             bandwidth: 48_000,
             vfoFrequency: appState.rigState?.frequency
         )
+    }
+
+    // MARK: - Audio Engine
+
+    private func startAudio() {
+        let engine = AudioEngine()
+        self.audioEngine = engine
+
+        do {
+            try engine.start()
+            isRunning = true
+
+            // Consume FFT stream — already returns dB magnitudes
+            fftStreamTask = Task {
+                let stream = await engine.fftStream(fftSize: 4096)
+                for await magnitudes in stream {
+                    guard !Task.isCancelled else { break }
+                    await MainActor.run {
+                        self.spectrumData = magnitudes
+                    }
+                }
+            }
+        } catch {
+            print("Failed to start audio engine: \(error)")
+            isRunning = false
+        }
+    }
+
+    private func stopAudio() {
+        fftStreamTask?.cancel()
+        fftStreamTask = nil
+        audioEngine?.stop()
+        audioEngine = nil
+        isRunning = false
     }
 
     // MARK: - Helpers

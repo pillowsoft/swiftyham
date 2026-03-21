@@ -18,6 +18,9 @@ final class ServiceContainer: Observable {
     let clubLog: ClubLogClient
     let eqsl: EQSLClient
 
+    // Background task manager (set after init)
+    var backgroundTasks: BackgroundTaskManager?
+
     // Connected on demand
     private(set) var rigConnection: RigctldConnection?
     private(set) var clusterClient: ClusterClient?
@@ -47,9 +50,11 @@ final class ServiceContainer: Observable {
         let connection = RigctldConnection(host: host, port: port)
         try await connection.connect()
         self.rigConnection = connection
+        backgroundTasks?.onRigConnected()
     }
 
     func disconnectRig() async {
+        backgroundTasks?.onRigDisconnected()
         if let rig = rigConnection {
             await rig.disconnect()
         }
@@ -62,9 +67,11 @@ final class ServiceContainer: Observable {
         let client = ClusterClient(host: host, port: port, callsign: callsign)
         try await client.connect()
         self.clusterClient = client
+        backgroundTasks?.onClusterConnected()
     }
 
     func disconnectCluster() async {
+        backgroundTasks?.onClusterDisconnected()
         if let cluster = clusterClient {
             await cluster.disconnect()
         }

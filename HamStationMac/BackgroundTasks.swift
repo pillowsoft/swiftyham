@@ -12,8 +12,8 @@ final class BackgroundTaskManager {
     private var propagationSyncTask: Task<Void, Never>?
     private var qsoCountTask: Task<Void, Never>?
 
-    private let appState: AppState
-    private let services: ServiceContainer
+    let appState: AppState
+    let services: ServiceContainer
 
     init(appState: AppState, services: ServiceContainer) {
         self.appState = appState
@@ -38,11 +38,40 @@ final class BackgroundTaskManager {
         qsoCountTask = nil
     }
 
+    // MARK: - Rig Connection Lifecycle
+
+    /// Called after rig connects — starts consuming state stream.
+    /// Polling is started automatically by RigctldConnection.connect().
+    func onRigConnected() {
+        appState.rigConnectionState = .connected
+        startRigStateStream()
+    }
+
+    /// Called when rig disconnects.
+    func onRigDisconnected() {
+        stopRigStateStream()
+        appState.rigConnectionState = .disconnected
+        appState.rigState = nil
+    }
+
+    // MARK: - Cluster Connection Lifecycle
+
+    /// Called after cluster connects — starts spot stream.
+    func onClusterConnected() {
+        appState.clusterConnectionState = .connected
+        startSpotStream()
+    }
+
+    /// Called when cluster disconnects.
+    func onClusterDisconnected() {
+        stopSpotStream()
+        appState.clusterConnectionState = .disconnected
+    }
+
     // MARK: - Rig State Stream
 
     /// Starts consuming the rig's stateStream and updating appState.rigState.
-    /// Call after connecting rig.
-    func startRigStateStream() {
+    private func startRigStateStream() {
         rigStateTask?.cancel()
         guard let rig = services.rigConnection else { return }
 
@@ -56,7 +85,7 @@ final class BackgroundTaskManager {
         }
     }
 
-    func stopRigStateStream() {
+    private func stopRigStateStream() {
         rigStateTask?.cancel()
         rigStateTask = nil
     }

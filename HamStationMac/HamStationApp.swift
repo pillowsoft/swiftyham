@@ -85,6 +85,7 @@ struct HamStationApp: App {
             self.services = container
 
             let tasks = BackgroundTaskManager(appState: appState, services: container)
+            container.backgroundTasks = tasks
             self.backgroundTasks = tasks
             tasks.startAll()
         } catch {

@@ -43,17 +43,20 @@ final class QSOEntryViewModel {
 
     private let database: DatabaseManager
     private let lookupPipeline: CallsignLookupPipeline?
+    private let awardsEngine: AwardsEngine?
     private let myCallsign: String
     private let myGrid: String?
 
     init(
         database: DatabaseManager,
         lookupPipeline: CallsignLookupPipeline? = nil,
+        awardsEngine: AwardsEngine? = nil,
         myCallsign: String,
         myGrid: String?
     ) {
         self.database = database
         self.lookupPipeline = lookupPipeline
+        self.awardsEngine = awardsEngine
         self.myCallsign = myCallsign
         self.myGrid = myGrid
     }
@@ -196,6 +199,10 @@ final class QSOEntryViewModel {
 
             do {
                 try await database.createQSO(qso)
+                // Process awards in background
+                if let awards = awardsEngine {
+                    Task { let _ = try? await awards.processNewQSO(qso) }
+                }
                 return true
             } catch {
                 errorMessage = "Failed to save: \(error.localizedDescription)"

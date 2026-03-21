@@ -75,9 +75,51 @@ class LogbookViewModel {
     var usingSampleData: Bool = false
 
     private let database: DatabaseManager
+    private var observationTask: Task<Void, Never>?
 
     init(database: DatabaseManager) {
         self.database = database
+    }
+
+    /// Starts observing QSOs via GRDB ValueObservation for live updates.
+    func startObserving() {
+        observationTask?.cancel()
+        // Capture filter values before entering the task
+        let band = filterBand
+        let mode = filterMode
+        let search = searchText.isEmpty ? nil : searchText
+        let sort = sortField
+        let asc = ascending
+        let db = database
+
+        observationTask = Task { [weak self] in
+            guard let self else { return }
+            let stream = await db.observeQSOs(
+                band: band,
+                mode: mode,
+                callsignContains: search,
+                sortBy: sort,
+                ascending: asc,
+                limit: 500
+            )
+            for await qsos in stream {
+                guard !Task.isCancelled else { break }
+                if qsos.isEmpty && self.searchText.isEmpty && self.filterBand == nil && self.filterMode == nil {
+                    self.rows = LogbookView.sampleData
+                    self.totalCount = 0
+                    self.usingSampleData = true
+                } else {
+                    self.rows = qsos.map { LogbookRow(from: $0) }
+                    self.totalCount = (try? await self.database.countQSOs(logbookId: nil)) ?? qsos.count
+                    self.usingSampleData = false
+                }
+            }
+        }
+    }
+
+    /// Restarts observation with current filter state.
+    func reloadWithFilters() {
+        startObserving()
     }
 
     func loadQSOs() async {
@@ -114,11 +156,13 @@ class LogbookViewModel {
     func deleteQSO(id: UUID) async {
         do {
             try await database.deleteQSO(id: id)
-            await loadQSOs()
+            // Observation stream will auto-update; no manual reload needed
         } catch {
             print("Failed to delete QSO: \(error)")
         }
     }
+
+    // observationTask is cancelled when the view disappears and the @State is released
 }
 
 // MARK: - LogbookView
@@ -260,7 +304,7 @@ struct LogbookView: View {
         .onChange(of: searchText) { _, newValue in
             if let vm = viewModel {
                 vm.searchText = newValue
-                Task { await vm.loadQSOs() }
+                vm.reloadWithFilters()
             }
         }
         .toolbar {
@@ -298,6 +342,7 @@ struct LogbookView: View {
             QSOEntryView(viewModel: QSOEntryViewModel(
                 database: services.database,
                 lookupPipeline: services.lookupPipeline,
+                awardsEngine: services.awardsEngine,
                 myCallsign: appState.operatorCallsign,
                 myGrid: appState.gridSquare
             ))
@@ -319,7 +364,7 @@ struct LogbookView: View {
         .task {
             let vm = LogbookViewModel(database: services.database)
             self.viewModel = vm
-            await vm.loadQSOs()
+            vm.startObserving()
         }
         .navigationTitle("Logbook")
     }
@@ -410,7 +455,7 @@ struct LogbookView: View {
                     if let vm = viewModel {
                         vm.filterBand = filterBand
                         vm.filterMode = filterMode
-                        Task { await vm.loadQSOs() }
+                        vm.reloadWithFilters()
                     }
                 }
                 .buttonStyle(.borderedProminent)
