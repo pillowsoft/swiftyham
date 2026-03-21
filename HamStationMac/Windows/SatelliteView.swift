@@ -112,45 +112,76 @@ struct SatelliteView: View {
                 .font(.title2.bold())
                 .padding(.top, 12)
 
-            // Polar plot placeholder
-            ZStack {
-                // Outer circle (horizon)
-                Circle()
-                    .stroke(.quaternary, lineWidth: 1)
+            // Polar plot
+            Canvas { context, size in
+                let center = CGPoint(x: size.width / 2, y: size.height / 2)
+                let plotRadius = min(size.width, size.height) / 2 - 16
 
-                // 30-degree ring
-                Circle()
-                    .stroke(.quaternary, lineWidth: 0.5)
-                    .scaleEffect(2.0 / 3.0)
-
-                // 60-degree ring
-                Circle()
-                    .stroke(.quaternary, lineWidth: 0.5)
-                    .scaleEffect(1.0 / 3.0)
-
-                // Crosshairs
-                Path { path in
-                    path.move(to: CGPoint(x: 0.5, y: 0))
-                    path.addLine(to: CGPoint(x: 0.5, y: 1.0))
-                    path.move(to: CGPoint(x: 0, y: 0.5))
-                    path.addLine(to: CGPoint(x: 1.0, y: 0.5))
-                }
-                .stroke(.quaternary, lineWidth: 0.5)
-
-                // Cardinal directions
-                Text("N").font(.caption2).position(x: 0.5, y: 0.05)
-                Text("S").font(.caption2).position(x: 0.5, y: 0.95)
-                Text("E").font(.caption2).position(x: 0.95, y: 0.5)
-                Text("W").font(.caption2).position(x: 0.05, y: 0.5)
-
-                // Sample pass arc
-                Circle()
-                    .fill(Color.accentColor)
-                    .frame(width: 8, height: 8)
-                    .position(
-                        x: 0.5 + CGFloat(0.3 * cos(pass.aosAzimuth * .pi / 180)),
-                        y: 0.5 - CGFloat(0.3 * sin(pass.aosAzimuth * .pi / 180))
+                // Concentric circles at 30deg, 60deg, 90deg elevation
+                // Outer = 0deg (horizon), inner = 90deg (zenith)
+                for ring in [0.0, 30.0, 60.0] {
+                    let r = (90 - ring) / 90 * plotRadius
+                    let rect = CGRect(
+                        x: center.x - r, y: center.y - r,
+                        width: r * 2, height: r * 2
                     )
+                    context.stroke(
+                        Path(ellipseIn: rect),
+                        with: .color(.gray.opacity(0.3)),
+                        lineWidth: ring == 0 ? 1 : 0.5
+                    )
+                }
+
+                // Crosshairs (N-S, E-W)
+                var crossPath = Path()
+                crossPath.move(to: CGPoint(x: center.x, y: center.y - plotRadius))
+                crossPath.addLine(to: CGPoint(x: center.x, y: center.y + plotRadius))
+                crossPath.move(to: CGPoint(x: center.x - plotRadius, y: center.y))
+                crossPath.addLine(to: CGPoint(x: center.x + plotRadius, y: center.y))
+                context.stroke(crossPath, with: .color(.gray.opacity(0.3)), lineWidth: 0.5)
+
+                // Cardinal direction labels
+                let labelFont = Font.caption2
+                for (label, angle) in [("N", 0.0), ("E", 90.0), ("S", 180.0), ("W", 270.0)] {
+                    let labelRadius = plotRadius + 10
+                    let rad = angle * .pi / 180
+                    let pt = CGPoint(
+                        x: center.x + labelRadius * CGFloat(sin(rad)),
+                        y: center.y - labelRadius * CGFloat(cos(rad))
+                    )
+                    context.draw(
+                        Text(label).font(labelFont).foregroundStyle(.secondary),
+                        at: pt
+                    )
+                }
+
+                // Helper: polar to Cartesian
+                func polarToPoint(azimuth: Double, elevation: Double) -> CGPoint {
+                    let r = (90 - elevation) / 90 * plotRadius
+                    let rad = azimuth * .pi / 180
+                    return CGPoint(
+                        x: center.x + r * CGFloat(sin(rad)),
+                        y: center.y - r * CGFloat(cos(rad))
+                    )
+                }
+
+                // Pass arc: AOS -> peak -> LOS via quadratic curve
+                let aosPoint = polarToPoint(azimuth: pass.aosAzimuth, elevation: 0)
+                let peakAzimuth = (pass.aosAzimuth + pass.losAzimuth) / 2
+                let peakPoint = polarToPoint(azimuth: peakAzimuth, elevation: pass.maxElevation)
+                let losPoint = polarToPoint(azimuth: pass.losAzimuth, elevation: 0)
+
+                var arcPath = Path()
+                arcPath.move(to: aosPoint)
+                arcPath.addQuadCurve(to: losPoint, control: peakPoint)
+                context.stroke(arcPath, with: .color(Color.accentColor), lineWidth: 2)
+
+                // Current position dot at max elevation point
+                let dotRect = CGRect(
+                    x: peakPoint.x - 5, y: peakPoint.y - 5,
+                    width: 10, height: 10
+                )
+                context.fill(Path(ellipseIn: dotRect), with: .color(Color.accentColor))
             }
             .aspectRatio(1, contentMode: .fit)
             .frame(maxWidth: 250, maxHeight: 250)

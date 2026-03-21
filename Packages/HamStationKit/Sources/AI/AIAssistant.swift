@@ -140,7 +140,12 @@ public actor AIAssistant {
 
     // MARK: - Send Message
 
-    /// Send a message to the Claude API and return the assistant's response.
+    /// Send a message and return the assistant's response.
+    ///
+    /// Routes to the correct backend based on ``AIPrivacySettings/provider``:
+    /// - `.local` — placeholder until Qwen3/MLX is wired
+    /// - `.openRouter` — OpenAI-compatible API via openrouter.ai
+    /// - `.anthropic` — Direct Anthropic Messages API
     ///
     /// - Parameters:
     ///   - message: The user's message text.
@@ -151,16 +156,37 @@ public actor AIAssistant {
         guard privacySettings.aiEnabled else {
             throw AIAssistantError.notEnabled
         }
-        guard let apiKey = privacySettings.apiKey, !apiKey.isEmpty else {
-            throw AIAssistantError.noAPIKey
-        }
 
         // Append user message to history
         let userMessage = ChatMessage(role: .user, content: message)
         _conversationHistory.append(userMessage)
         trimHistory()
 
-        // Build API request
+        let text: String
+        switch privacySettings.provider {
+        case .local:
+            text = "Local Qwen3 model not yet configured. Install mlx-lm and download a Qwen3 model to use local AI."
+        case .openRouter:
+            text = try await sendViaOpenRouter(context: context)
+        case .anthropic:
+            text = try await sendViaAnthropic(context: context)
+        }
+
+        // Append assistant response to history
+        let assistantMessage = ChatMessage(role: .assistant, content: text)
+        _conversationHistory.append(assistantMessage)
+        trimHistory()
+
+        return text
+    }
+
+    // MARK: - Anthropic Backend
+
+    private func sendViaAnthropic(context: AssistantContext) async throws -> String {
+        guard let apiKey = privacySettings.apiKey, !apiKey.isEmpty else {
+            throw AIAssistantError.noAPIKey
+        }
+
         let systemPrompt = buildSystemPrompt(context: context)
         let apiMessages = _conversationHistory.compactMap { msg -> [String: String]? in
             switch msg.role {
@@ -192,6 +218,75 @@ public actor AIAssistant {
         }
         request.httpBody = httpBody
 
+        let (data, response) = try await performRequest(request)
+
+        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let content = json["content"] as? [[String: Any]],
+              let firstBlock = content.first,
+              let text = firstBlock["text"] as? String else {
+            throw AIAssistantError.requestFailed("Failed to parse Anthropic API response")
+        }
+
+        return text
+    }
+
+    // MARK: - OpenRouter Backend
+
+    private func sendViaOpenRouter(context: AssistantContext) async throws -> String {
+        guard let apiKey = privacySettings.apiKey, !apiKey.isEmpty else {
+            throw AIAssistantError.noAPIKey
+        }
+
+        let systemPrompt = buildSystemPrompt(context: context)
+
+        // OpenRouter uses OpenAI-compatible format: system message + conversation
+        var apiMessages: [[String: String]] = [
+            ["role": "system", "content": systemPrompt]
+        ]
+        for msg in _conversationHistory {
+            switch msg.role {
+            case .user: apiMessages.append(["role": "user", "content": msg.content])
+            case .assistant: apiMessages.append(["role": "assistant", "content": msg.content])
+            case .system: break
+            }
+        }
+
+        let body: [String: Any] = [
+            "model": "anthropic/claude-sonnet-4-20250514",
+            "max_tokens": 1024,
+            "messages": apiMessages
+        ]
+
+        guard let url = URL(string: "https://openrouter.ai/api/v1/chat/completions") else {
+            throw AIAssistantError.networkError("Invalid API URL")
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "content-type")
+
+        guard let httpBody = try? JSONSerialization.data(withJSONObject: body) else {
+            throw AIAssistantError.requestFailed("Failed to serialize request body")
+        }
+        request.httpBody = httpBody
+
+        let (data, response) = try await performRequest(request)
+
+        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let choices = json["choices"] as? [[String: Any]],
+              let first = choices.first,
+              let message = first["message"] as? [String: Any],
+              let text = message["content"] as? String else {
+            throw AIAssistantError.requestFailed("Failed to parse OpenRouter API response")
+        }
+
+        return text
+    }
+
+    // MARK: - Shared HTTP
+
+    private func performRequest(_ request: URLRequest) async throws -> (Data, URLResponse) {
         let data: Data
         let response: URLResponse
         do {
@@ -213,20 +308,7 @@ public actor AIAssistant {
             throw AIAssistantError.requestFailed("HTTP \(httpResponse.statusCode): \(errorBody)")
         }
 
-        // Parse response
-        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let content = json["content"] as? [[String: Any]],
-              let firstBlock = content.first,
-              let text = firstBlock["text"] as? String else {
-            throw AIAssistantError.requestFailed("Failed to parse API response")
-        }
-
-        // Append assistant response to history
-        let assistantMessage = ChatMessage(role: .assistant, content: text)
-        _conversationHistory.append(assistantMessage)
-        trimHistory()
-
-        return text
+        return (data, response)
     }
 
     // MARK: - History Management

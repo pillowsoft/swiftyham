@@ -2,6 +2,7 @@
 // ICS Forms, Net Logger, and Winlink placeholder.
 
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct EmCommView: View {
     @State private var selectedTab: EmCommTab = .icsForms
@@ -160,6 +161,7 @@ private struct ICSFormsListView: View {
 
 private struct ICSFormDetailView: View {
     let form: ICSFormsListView.SampleForm
+    @State private var exportError: String?
 
     var body: some View {
         ScrollView {
@@ -168,10 +170,16 @@ private struct ICSFormDetailView: View {
                     Text(form.formType)
                         .font(.title2.bold())
                     Spacer()
-                    Button("Export") {
-                        // Export action
+                    Button("Export PDF") {
+                        exportToPDF()
                     }
                     .buttonStyle(.bordered)
+                }
+
+                if let error = exportError {
+                    Text(error)
+                        .font(.caption)
+                        .foregroundStyle(.red)
                 }
 
                 Divider()
@@ -259,6 +267,122 @@ private struct ICSFormDetailView: View {
             (time: "19:05", station: "WA4JKL", message: "Checked in, priority traffic"),
             (time: "19:08", station: "N1ABC", message: "Net secured"),
         ]
+    }
+
+    // MARK: - PDF Export
+
+    private func exportToPDF() {
+        let panel = NSSavePanel()
+        panel.title = "Export \(form.formType)"
+        panel.nameFieldStringValue = "\(form.formType)_\(form.date).pdf"
+        panel.allowedContentTypes = [.pdf]
+        panel.canCreateDirectories = true
+
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+
+        let pageWidth: CGFloat = 612  // US Letter
+        let pageHeight: CGFloat = 792
+        let margin: CGFloat = 50
+
+        guard let context = CGContext(url as CFURL, mediaBox: nil, nil) else {
+            exportError = "Failed to create PDF context"
+            return
+        }
+
+        var mediaBox = CGRect(x: 0, y: 0, width: pageWidth, height: pageHeight)
+        context.beginPage(mediaBox: &mediaBox)
+
+        let textWidth = pageWidth - margin * 2
+        var yPos = pageHeight - margin
+
+        // Title
+        let titleFont = NSFont.boldSystemFont(ofSize: 18)
+        let titleAttrs: [NSAttributedString.Key: Any] = [.font: titleFont]
+        let title = "\(form.formType) — \(form.incidentName)" as NSString
+        title.draw(at: CGPoint(x: margin, y: yPos - 20), withAttributes: titleAttrs)
+        yPos -= 40
+
+        // Fields
+        let labelFont = NSFont.boldSystemFont(ofSize: 10)
+        let valueFont = NSFont.systemFont(ofSize: 12)
+        let labelAttrs: [NSAttributedString.Key: Any] = [.font: labelFont, .foregroundColor: NSColor.secondaryLabelColor]
+        let valueAttrs: [NSAttributedString.Key: Any] = [.font: valueFont]
+
+        func drawField(_ label: String, _ value: String) {
+            (label as NSString).draw(at: CGPoint(x: margin, y: yPos - 12), withAttributes: labelAttrs)
+            (value as NSString).draw(at: CGPoint(x: margin + 130, y: yPos - 14), withAttributes: valueAttrs)
+            yPos -= 22
+        }
+
+        drawField("Incident Name:", form.incidentName)
+        drawField("Prepared By:", form.preparedBy)
+        drawField("Date:", form.date)
+
+        if form.formType == "ICS-213" {
+            yPos -= 10
+            // Line
+            context.setStrokeColor(NSColor.separatorColor.cgColor)
+            context.move(to: CGPoint(x: margin, y: yPos))
+            context.addLine(to: CGPoint(x: pageWidth - margin, y: yPos))
+            context.strokePath()
+            yPos -= 15
+
+            drawField("To:", "EOC Director")
+            drawField("From:", form.preparedBy)
+            drawField("Subject:", "Status Update")
+
+            yPos -= 10
+            ("Message:" as NSString).draw(at: CGPoint(x: margin, y: yPos - 12), withAttributes: labelAttrs)
+            yPos -= 22
+
+            let messageText = "All stations checked in. No emergency traffic. Net control is \(form.preparedBy)."
+            let messageAttrs: [NSAttributedString.Key: Any] = [.font: valueFont]
+            let messageRect = CGRect(x: margin, y: yPos - 100, width: textWidth, height: 100)
+            (messageText as NSString).draw(in: messageRect, withAttributes: messageAttrs)
+        }
+
+        if form.formType == "ICS-309" {
+            yPos -= 10
+            context.setStrokeColor(NSColor.separatorColor.cgColor)
+            context.move(to: CGPoint(x: margin, y: yPos))
+            context.addLine(to: CGPoint(x: pageWidth - margin, y: yPos))
+            context.strokePath()
+            yPos -= 15
+
+            drawField("Net Name:", "County ARES Net")
+            drawField("Frequency:", "146.760 MHz")
+            yPos -= 10
+
+            // Table header
+            let headerFont = NSFont.boldSystemFont(ofSize: 9)
+            let headerAttrs: [NSAttributedString.Key: Any] = [.font: headerFont]
+            let cellFont = NSFont.monospacedSystemFont(ofSize: 9, weight: .regular)
+            let cellAttrs: [NSAttributedString.Key: Any] = [.font: cellFont]
+
+            ("Time" as NSString).draw(at: CGPoint(x: margin, y: yPos - 12), withAttributes: headerAttrs)
+            ("Station" as NSString).draw(at: CGPoint(x: margin + 60, y: yPos - 12), withAttributes: headerAttrs)
+            ("Message" as NSString).draw(at: CGPoint(x: margin + 150, y: yPos - 12), withAttributes: headerAttrs)
+            yPos -= 18
+
+            for entry in sampleLogEntries {
+                (entry.time as NSString).draw(at: CGPoint(x: margin, y: yPos - 12), withAttributes: cellAttrs)
+                (entry.station as NSString).draw(at: CGPoint(x: margin + 60, y: yPos - 12), withAttributes: cellAttrs)
+                (entry.message as NSString).draw(at: CGPoint(x: margin + 150, y: yPos - 12), withAttributes: cellAttrs)
+                yPos -= 16
+            }
+        }
+
+        // Footer
+        let footerFont = NSFont.systemFont(ofSize: 8)
+        let footerAttrs: [NSAttributedString.Key: Any] = [.font: footerFont, .foregroundColor: NSColor.tertiaryLabelColor]
+        let footer = "Generated by HamStation Pro — \(Date().formatted())" as NSString
+        footer.draw(at: CGPoint(x: margin, y: margin - 20), withAttributes: footerAttrs)
+
+        context.endPage()
+        context.closePDF()
+
+        exportError = nil
+        NSWorkspace.shared.open(url)
     }
 }
 

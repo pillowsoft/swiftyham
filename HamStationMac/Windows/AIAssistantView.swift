@@ -2,19 +2,48 @@
 // Conversational UI with message bubbles, quick actions, and privacy indicator.
 
 import SwiftUI
+import HamStationKit
 
 struct AIAssistantView: View {
     @Environment(AppState.self) var appState
 
+    @AppStorage("ai_enabled") private var aiEnabled: Bool = false
+    @AppStorage("ai_provider") private var providerRaw: String = AIPrivacySettings.AIProvider.local.rawValue
+    @AppStorage("ai_include_callsign") private var includeCallsign: Bool = true
+    @AppStorage("ai_include_location") private var includeLocation: Bool = false
+    @AppStorage("ai_include_award_progress") private var includeAwardProgress: Bool = false
+    @AppStorage("ai_include_recent_qsos") private var includeRecentQSOs: Bool = false
+
     @State private var inputText: String = ""
     @State private var messages: [AIMessage] = []
     @State private var isLoading: Bool = false
-    @State private var aiEnabled: Bool = false
+    @State private var aiAssistant: AIAssistant?
+    @State private var errorMessage: String?
 
     var body: some View {
         VStack(spacing: 0) {
             if !aiEnabled {
                 aiFeaturesOffBanner
+            }
+
+            // Error banner
+            if let errorMessage {
+                HStack {
+                    Image(systemName: "exclamationmark.triangle")
+                        .foregroundStyle(.orange)
+                    Text(errorMessage)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Button("Dismiss") {
+                        self.errorMessage = nil
+                    }
+                    .font(.caption)
+                    .buttonStyle(.borderless)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(Color.orange.opacity(0.1))
             }
 
             // Chat messages
@@ -63,6 +92,46 @@ struct AIAssistantView: View {
             inputBar
         }
         .navigationTitle("AI Assistant")
+        .task {
+            rebuildAssistant()
+        }
+        .onChange(of: aiEnabled) { _, _ in rebuildAssistant() }
+        .onChange(of: providerRaw) { _, _ in rebuildAssistant() }
+        .onChange(of: includeCallsign) { _, _ in rebuildAssistant() }
+        .onChange(of: includeLocation) { _, _ in rebuildAssistant() }
+        .onChange(of: includeAwardProgress) { _, _ in rebuildAssistant() }
+        .onChange(of: includeRecentQSOs) { _, _ in rebuildAssistant() }
+    }
+
+    // MARK: - Build AIAssistant from current settings
+
+    private func rebuildAssistant() {
+        let provider = AIPrivacySettings.AIProvider(rawValue: providerRaw) ?? .local
+        let keychainKey = provider == .openRouter ? "openrouter_api_key" : "anthropic_api_key"
+        let apiKey = KeychainHelper.load(key: keychainKey)
+
+        let settings = AIPrivacySettings(
+            aiEnabled: aiEnabled,
+            includeCallsign: includeCallsign,
+            includeLocation: includeLocation,
+            includeAwardProgress: includeAwardProgress,
+            includeRecentQSOs: includeRecentQSOs,
+            apiKey: apiKey,
+            provider: provider
+        )
+        aiAssistant = AIAssistant(privacySettings: settings)
+    }
+
+    // MARK: - Build context from AppState
+
+    private func buildContext() -> AssistantContext {
+        AssistantContext(
+            operatorCallsign: appState.operatorCallsign,
+            gridSquare: appState.gridSquare,
+            licenseClass: appState.licenseClass,
+            currentBand: appState.rigState?.band,
+            currentMode: appState.rigState?.modeString
+        )
     }
 
     // MARK: - AI Features Off Banner
@@ -128,12 +197,19 @@ struct AIAssistantView: View {
 
     private var privacySummary: String {
         guard aiEnabled else { return "AI features disabled" }
-        var shared: [String] = []
-        shared.append("callsign")  // Placeholder — would read from AIPrivacySettings
-        if shared.isEmpty {
-            return "No personal data shared"
+        let provider = AIPrivacySettings.AIProvider(rawValue: providerRaw) ?? .local
+        if provider == .local {
+            return "Local model — no data leaves your Mac"
         }
-        return "Sharing: \(shared.joined(separator: ", "))"
+        var shared: [String] = []
+        if includeCallsign { shared.append("callsign") }
+        if includeLocation { shared.append("grid square") }
+        if includeAwardProgress { shared.append("award progress") }
+        if includeRecentQSOs { shared.append("recent QSOs") }
+        if shared.isEmpty {
+            return "No personal data shared • \(provider.displayName)"
+        }
+        return "Sharing: \(shared.joined(separator: ", ")) • \(provider.displayName)"
     }
 
     // MARK: - Input Bar
@@ -175,15 +251,36 @@ struct AIAssistantView: View {
         messages.append(userMessage)
         inputText = ""
         isLoading = true
+        errorMessage = nil
 
-        // Simulate AI response — in production, this calls AIAssistant.sendMessage
         Task { @MainActor in
-            try? await Task.sleep(for: .seconds(1))
-            let response = AIMessage(
-                role: .assistant,
-                content: "I'd be happy to help with that! This is a placeholder response. Connect an Anthropic API key in Settings to get real AI assistance."
-            )
-            messages.append(response)
+            guard let assistant = aiAssistant else {
+                errorMessage = "AI assistant not initialized. Check your settings."
+                isLoading = false
+                return
+            }
+
+            let context = buildContext()
+            do {
+                let responseText = try await assistant.sendMessage(text, context: context)
+                let response = AIMessage(role: .assistant, content: responseText)
+                messages.append(response)
+            } catch let error as AIAssistantError {
+                switch error {
+                case .notEnabled:
+                    errorMessage = "AI features are disabled. Enable them in Settings."
+                case .noAPIKey:
+                    errorMessage = "No API key configured. Add one in Settings."
+                case .rateLimited:
+                    errorMessage = "Rate limited. Please wait a moment and try again."
+                case .requestFailed(let msg):
+                    errorMessage = "Request failed: \(msg)"
+                case .networkError(let msg):
+                    errorMessage = "Network error: \(msg)"
+                }
+            } catch {
+                errorMessage = "Unexpected error: \(error.localizedDescription)"
+            }
             isLoading = false
         }
     }

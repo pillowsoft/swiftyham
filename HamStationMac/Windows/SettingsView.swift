@@ -333,16 +333,23 @@ private struct LogSubmissionSettingsTab: View {
 // MARK: - AI
 
 private struct AISettingsTab: View {
-    @State private var aiEnabled: Bool = false
-    @State private var provider: AIPrivacySettings.AIProvider = .local
-    @State private var includeCallsign: Bool = true
-    @State private var includeLocation: Bool = false
-    @State private var includeAwardProgress: Bool = false
-    @State private var includeRecentQSOs: Bool = false
+    @AppStorage("ai_enabled") private var aiEnabled: Bool = false
+    @AppStorage("ai_provider") private var providerRaw: String = AIPrivacySettings.AIProvider.local.rawValue
+    @AppStorage("ai_include_callsign") private var includeCallsign: Bool = true
+    @AppStorage("ai_include_location") private var includeLocation: Bool = false
+    @AppStorage("ai_include_award_progress") private var includeAwardProgress: Bool = false
+    @AppStorage("ai_include_recent_qsos") private var includeRecentQSOs: Bool = false
     @State private var apiKey: String = ""
-    @State private var enableNLLogging: Bool = false
-    @State private var enableSmartAnalysis: Bool = false
+    @AppStorage("ai_enable_nl_logging") private var enableNLLogging: Bool = false
+    @AppStorage("ai_enable_smart_analysis") private var enableSmartAnalysis: Bool = false
     @State private var availableRAM: String = ""
+
+    private var provider: Binding<AIPrivacySettings.AIProvider> {
+        Binding(
+            get: { AIPrivacySettings.AIProvider(rawValue: providerRaw) ?? .local },
+            set: { providerRaw = $0.rawValue }
+        )
+    }
 
     var body: some View {
         Form {
@@ -350,13 +357,13 @@ private struct AISettingsTab: View {
                 Toggle("Enable AI Assistant", isOn: $aiEnabled)
 
                 if aiEnabled {
-                    Picker("Backend", selection: $provider) {
+                    Picker("Backend", selection: provider) {
                         ForEach(AIPrivacySettings.AIProvider.allCases, id: \.self) { p in
                             Text(p.displayName).tag(p)
                         }
                     }
 
-                    switch provider {
+                    switch provider.wrappedValue {
                     case .local:
                         HStack {
                             Image(systemName: "desktopcomputer")
@@ -428,10 +435,10 @@ private struct AISettingsTab: View {
             let ram = ProcessInfo.processInfo.physicalMemory
             availableRAM = String(format: "%.0f GB", Double(ram) / 1_073_741_824)
             // Default to local if enough RAM, otherwise suggest OpenRouter
-            if ram < 16_000_000_000 && provider == .local {
-                provider = .openRouter
+            if ram < 16_000_000_000 && provider.wrappedValue == .local {
+                provider.wrappedValue = .openRouter
             }
-            apiKey = KeychainHelper.load(key: provider == .openRouter ? "openrouter_api_key" : "anthropic_api_key") ?? ""
+            apiKey = KeychainHelper.load(key: provider.wrappedValue == .openRouter ? "openrouter_api_key" : "anthropic_api_key") ?? ""
         }
     }
 }

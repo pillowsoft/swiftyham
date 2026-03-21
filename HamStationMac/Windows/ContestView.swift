@@ -1,6 +1,7 @@
 // ContestView.swift — Contest operating view with QSO entry, score, rate, and multiplier tracking.
 // Quick-log: Enter fills callsign, Tab to exchange, Enter to log.
 
+import Charts
 import SwiftUI
 
 struct ContestView: View {
@@ -358,26 +359,31 @@ struct ContestView: View {
 
                 Divider()
 
-                // Rate graph placeholder
+                // Rate graph
                 VStack(alignment: .leading, spacing: 8) {
                     Text("QSO Rate")
                         .font(.headline)
 
-                    // Simple rate bars
-                    ForEach(ContestView.sampleRateHistory) { entry in
-                        HStack(spacing: 8) {
-                            Text(entry.label)
-                                .font(.system(.caption2, design: .monospaced))
-                                .frame(width: 40, alignment: .trailing)
-                            Rectangle()
-                                .fill(Color.accentColor.opacity(0.6))
-                                .frame(width: CGFloat(entry.rate) * 2, height: 12)
-                                .clipShape(RoundedRectangle(cornerRadius: 2))
+                    Chart(ContestView.sampleRateHistory) { entry in
+                        BarMark(
+                            x: .value("Rate", entry.rate),
+                            y: .value("Time", entry.label)
+                        )
+                        .foregroundStyle(Color(hex: "FF6A00"))
+                        .annotation(position: .trailing, spacing: 4) {
                             Text("\(entry.rate)")
                                 .font(.system(.caption2, design: .monospaced))
                                 .foregroundStyle(.secondary)
                         }
                     }
+                    .chartYAxis {
+                        AxisMarks { _ in
+                            AxisValueLabel()
+                                .font(.system(.caption2, design: .monospaced))
+                        }
+                    }
+                    .chartXAxis(.hidden)
+                    .frame(height: 120)
                 }
 
                 Spacer()
