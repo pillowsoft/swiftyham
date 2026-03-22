@@ -19,11 +19,15 @@ struct AIAssistantView: View {
     @State private var isLoading: Bool = false
     @State private var aiAssistant: AIAssistant?
     @State private var errorMessage: String?
+    @State private var localEngine = LocalLLMEngine()
+    @State private var showModelDownload = false
 
     var body: some View {
         VStack(spacing: 0) {
             if !aiEnabled {
                 aiFeaturesOffBanner
+            } else if provider == .local {
+                localModelBanner
             }
 
             // Error banner
@@ -136,6 +140,10 @@ struct AIAssistantView: View {
 
     // MARK: - AI Features Off Banner
 
+    private var provider: AIPrivacySettings.AIProvider {
+        AIPrivacySettings.AIProvider(rawValue: providerRaw) ?? .local
+    }
+
     private var aiFeaturesOffBanner: some View {
         HStack {
             Image(systemName: "brain")
@@ -154,6 +162,39 @@ struct AIAssistantView: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
         .background(.ultraThinMaterial)
+    }
+
+    @MainActor
+    private var localModelBanner: some View {
+        Group {
+            let engineReady = false // Will be checked async
+            if !engineReady {
+                HStack {
+                    Image(systemName: "arrow.down.circle")
+                        .foregroundStyle(.orange)
+                    Text("Download an AI model to use local inference.")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Button("Download Model") {
+                        showModelDownload = true
+                    }
+                    .font(.callout)
+                    .buttonStyle(.bordered)
+                    .tint(.orange)
+                    .controlSize(.small)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background(Color.orange.opacity(0.05))
+                .sheet(isPresented: $showModelDownload) {
+                    AIModelDownloadView(engine: localEngine) {
+                        showModelDownload = false
+                    }
+                    .environment(appState)
+                }
+            }
+        }
     }
 
     // MARK: - Quick Actions
