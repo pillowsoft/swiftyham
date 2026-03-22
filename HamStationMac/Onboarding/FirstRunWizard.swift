@@ -15,7 +15,8 @@ struct FirstRunWizard: View {
         case profile = 1
         case importLogbook = 2
         case rigSetup = 3
-        case done = 4
+        case aiSetup = 4
+        case done = 5
 
         var title: String {
             switch self {
@@ -23,6 +24,7 @@ struct FirstRunWizard: View {
             case .profile: return "Operator Profile"
             case .importLogbook: return "Import Logbook"
             case .rigSetup: return "Rig Setup"
+            case .aiSetup: return "AI Assistant"
             case .done: return "All Set"
             }
         }
@@ -45,6 +47,8 @@ struct FirstRunWizard: View {
                     importStep
                 case .rigSetup:
                     rigSetupStep
+                case .aiSetup:
+                    aiSetupStep
                 case .done:
                     doneStep
                 }
@@ -440,7 +444,7 @@ struct FirstRunWizard: View {
             .frame(maxWidth: 400)
 
             Button("Skip -- I'll set this up later") {
-                withAnimation { currentStep = .done }
+                withAnimation { currentStep = .aiSetup }
             }
             .buttonStyle(.plain)
             .foregroundStyle(.secondary)
@@ -465,7 +469,111 @@ struct FirstRunWizard: View {
         rigTesting = false
     }
 
-    // MARK: - Step 5: Done
+    // MARK: - Step 5: AI Setup
+
+    @State private var localEngine = LocalLLMEngine()
+    @State private var aiModelDownloaded = false
+    @State private var aiDownloading = false
+    @State private var aiDownloadProgress: Double = 0
+    @State private var aiDownloadError: String?
+
+    private var aiSetupStep: some View {
+        VStack(spacing: 24) {
+            Text("AI Assistant")
+                .font(.title.bold())
+
+            Text("HamStation Pro includes an on-device AI assistant for band advice, contest strategy, and ham radio questions. No data leaves your Mac.")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: 400)
+
+            let recommended = LocalLLMEngine.bestModelForSystem()
+
+            VStack(spacing: 12) {
+                Image(systemName: "brain.head.profile")
+                    .font(.system(size: 40))
+                    .foregroundStyle(.orange)
+
+                Text(recommended.displayName)
+                    .font(.headline)
+
+                Text(recommended.description)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                Text(String(format: "%.1f GB download • Your Mac has %dGB RAM", recommended.sizeGB, LocalLLMEngine.systemRAMGB))
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+            }
+
+            if aiDownloading {
+                VStack(spacing: 6) {
+                    ProgressView(value: aiDownloadProgress)
+                        .frame(width: 300)
+                    Text("Downloading AI model... \(Int(aiDownloadProgress * 100))%")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            } else if aiModelDownloaded {
+                Label("AI model ready!", systemImage: "checkmark.circle.fill")
+                    .foregroundStyle(.green)
+            } else {
+                Button("Download AI Model") {
+                    Task { await downloadAIModel(recommended) }
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.orange)
+                .controlSize(.large)
+            }
+
+            if let error = aiDownloadError {
+                Text(error)
+                    .font(.caption)
+                    .foregroundStyle(.red)
+                    .frame(maxWidth: 300)
+            }
+
+            Button("Skip — I'll use cloud AI or set this up later") {
+                withAnimation { currentStep = .done }
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(.secondary)
+            .font(.caption)
+        }
+        .padding()
+    }
+
+    @MainActor
+    private func downloadAIModel(_ model: LocalLLMEngine.ModelInfo) async {
+        aiDownloading = true
+        aiDownloadError = nil
+        aiDownloadProgress = 0
+
+        let pollTask = Task {
+            while !Task.isCancelled {
+                let status = await localEngine.status
+                if case .downloading(let progress) = status {
+                    aiDownloadProgress = progress
+                }
+                try? await Task.sleep(nanoseconds: 200_000_000)
+            }
+        }
+
+        do {
+            try await localEngine.loadModel(model)
+            pollTask.cancel()
+            aiDownloadProgress = 1.0
+            aiModelDownloaded = true
+        } catch {
+            pollTask.cancel()
+            aiDownloadError = "Download failed: \(error.localizedDescription)"
+        }
+
+        aiDownloading = false
+    }
+
+    // MARK: - Step 6: Done
 
     private var doneStep: some View {
         VStack(spacing: 24) {
@@ -491,6 +599,10 @@ struct FirstRunWizard: View {
                     .font(.body)
                 if importComplete {
                     Label("Logbook imported", systemImage: "checkmark.circle")
+                        .font(.body)
+                }
+                if aiModelDownloaded {
+                    Label("AI model downloaded", systemImage: "checkmark.circle")
                         .font(.body)
                 }
             }

@@ -210,6 +210,29 @@ public actor LocalLLMEngine {
         }
     }
 
+    /// Stream a response token by token for responsive UI.
+    ///
+    /// - Parameters:
+    ///   - systemPrompt: The system prompt.
+    ///   - lastMessage: The user's latest message.
+    /// - Returns: An async stream of response text chunks.
+    public func streamChat(
+        systemPrompt: String,
+        lastMessage: String
+    ) -> AsyncThrowingStream<String, Error> {
+        guard let container = modelContainer else {
+            return AsyncThrowingStream { $0.finish(throwing: LocalLLMError.modelNotLoaded) }
+        }
+
+        let session = ChatSession(
+            container,
+            instructions: systemPrompt,
+            generateParameters: .init(temperature: 0.7, topP: 0.9)
+        )
+
+        return session.streamResponse(to: lastMessage)
+    }
+
     /// Clear conversation history.
     public func clearHistory() async {
         chatSession = nil

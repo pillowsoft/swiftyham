@@ -302,27 +302,80 @@ struct AIAssistantView: View {
             }
 
             let context = buildContext()
-            do {
-                let responseText = try await assistant.sendMessage(text, context: context)
-                let response = AIMessage(role: .assistant, content: responseText)
-                messages.append(response)
-            } catch let error as AIAssistantError {
-                switch error {
-                case .notEnabled:
-                    errorMessage = "AI features are disabled. Enable them in Settings."
-                case .noAPIKey:
-                    errorMessage = "No API key configured. Add one in Settings."
-                case .rateLimited:
-                    errorMessage = "Rate limited. Please wait a moment and try again."
-                case .requestFailed(let msg):
-                    errorMessage = "Request failed: \(msg)"
-                case .networkError(let msg):
-                    errorMessage = "Network error: \(msg)"
-                }
-            } catch {
-                errorMessage = "Unexpected error: \(error.localizedDescription)"
+
+            // For local provider, try streaming for responsive UI
+            if provider == .local {
+                await sendLocalStreaming(text: text, assistant: assistant, context: context)
+            } else {
+                await sendCloudMessage(text: text, assistant: assistant, context: context)
             }
+
             isLoading = false
+        }
+    }
+
+    @MainActor
+    private func sendCloudMessage(text: String, assistant: AIAssistant, context: AssistantContext) async {
+        do {
+            let responseText = try await assistant.sendMessage(text, context: context)
+            messages.append(AIMessage(role: .assistant, content: responseText))
+        } catch {
+            handleAIError(error)
+        }
+    }
+
+    @MainActor
+    private func sendLocalStreaming(text: String, assistant: AIAssistant, context: AssistantContext) async {
+        let engine = await assistant.localEngine
+        let systemPrompt = await assistant.buildSystemPrompt(context: context)
+
+        // Add a placeholder message that will be filled token by token
+        let placeholderIndex = messages.count
+        messages.append(AIMessage(role: .assistant, content: ""))
+
+        do {
+            let stream = await engine.streamChat(systemPrompt: systemPrompt, lastMessage: text)
+            var fullResponse = ""
+
+            for try await chunk in stream {
+                fullResponse += chunk
+                // Update the message in place for live streaming effect
+                if placeholderIndex < messages.count {
+                    messages[placeholderIndex] = AIMessage(
+                        id: messages[placeholderIndex].id,
+                        role: .assistant,
+                        content: fullResponse
+                    )
+                }
+            }
+
+            // Also record in assistant history
+            _ = try? await assistant.sendMessage(text, context: context)
+        } catch {
+            // Remove placeholder and show error
+            if placeholderIndex < messages.count && messages[placeholderIndex].content.isEmpty {
+                messages.remove(at: placeholderIndex)
+            }
+            handleAIError(error)
+        }
+    }
+
+    private func handleAIError(_ error: Error) {
+        if let aiError = error as? AIAssistantError {
+            switch aiError {
+            case .notEnabled:
+                errorMessage = "AI features are disabled. Enable them in Settings."
+            case .noAPIKey:
+                errorMessage = "No API key configured. Add one in Settings."
+            case .rateLimited:
+                errorMessage = "Rate limited. Please wait a moment and try again."
+            case .requestFailed(let msg):
+                errorMessage = "Request failed: \(msg)"
+            case .networkError(let msg):
+                errorMessage = "Network error: \(msg)"
+            }
+        } else {
+            errorMessage = "Error: \(error.localizedDescription)"
         }
     }
 

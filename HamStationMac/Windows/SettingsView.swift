@@ -343,6 +343,11 @@ private struct AISettingsTab: View {
     @AppStorage("ai_enable_nl_logging") private var enableNLLogging: Bool = false
     @AppStorage("ai_enable_smart_analysis") private var enableSmartAnalysis: Bool = false
     @State private var availableRAM: String = ""
+    @State private var localEngine = LocalLLMEngine()
+    @State private var showModelSheet = false
+    @State private var selectedModelId: String?
+    @State private var isDownloading = false
+    @State private var downloadProgress: Double = 0
 
     private var provider: Binding<AIPrivacySettings.AIProvider> {
         Binding(
@@ -365,20 +370,7 @@ private struct AISettingsTab: View {
 
                     switch provider.wrappedValue {
                     case .local:
-                        HStack {
-                            Image(systemName: "desktopcomputer")
-                                .foregroundStyle(.green)
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("Qwen3 via MLX — runs entirely on your Mac")
-                                    .font(.caption)
-                                Text("Available RAM: \(availableRAM)")
-                                    .font(.caption2)
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                        Text("Requires ~8 GB free RAM for the 4B model. No data leaves your Mac.")
-                            .font(.caption)
-                            .foregroundStyle(.tertiary)
+                        localModelSection
 
                     case .openRouter:
                         SecureField("OpenRouter API Key", text: $apiKey)
@@ -431,15 +423,95 @@ private struct AISettingsTab: View {
         }
         .formStyle(.grouped)
         .padding()
-        .onAppear {
-            let ram = ProcessInfo.processInfo.physicalMemory
-            availableRAM = String(format: "%.0f GB", Double(ram) / 1_073_741_824)
-            // Default to local if enough RAM, otherwise suggest OpenRouter
-            if ram < 16_000_000_000 && provider.wrappedValue == .local {
-                provider.wrappedValue = .openRouter
+        .onAppear { onAppearSetup() }
+    }
+
+    // MARK: - Local Model Management
+
+    private var localModelSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Image(systemName: "desktopcomputer")
+                    .foregroundStyle(.green)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("On-device AI via MLX — \(availableRAM) RAM")
+                        .font(.caption)
+                    Text("No data leaves your Mac.")
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                }
             }
-            apiKey = KeychainHelper.load(key: provider.wrappedValue == .openRouter ? "openrouter_api_key" : "anthropic_api_key") ?? ""
+
+            // Show available models
+            ForEach(LocalLLMEngine.recommendedModels()) { model in
+                HStack(spacing: 8) {
+                    Image(systemName: model.id == LocalLLMEngine.bestModelForSystem().id ? "star.fill" : "circle")
+                        .font(.caption)
+                        .foregroundStyle(model.id == LocalLLMEngine.bestModelForSystem().id ? .orange : .tertiary)
+
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(model.displayName)
+                            .font(.caption.bold())
+                        Text(String(format: "%.1f GB", model.sizeGB))
+                            .font(.caption2)
+                            .foregroundStyle(.tertiary)
+                    }
+
+                    Spacer()
+
+                    if isDownloading && selectedModelId == model.id {
+                        ProgressView(value: downloadProgress)
+                            .frame(width: 80)
+                        Text("\(Int(downloadProgress * 100))%")
+                            .font(.caption2.monospacedDigit())
+                            .frame(width: 30)
+                    } else {
+                        Button("Download") {
+                            Task { await downloadModel(model) }
+                        }
+                        .controlSize(.small)
+                        .disabled(isDownloading)
+                    }
+                }
+                .padding(.vertical, 2)
+            }
         }
+    }
+
+    private func downloadModel(_ model: LocalLLMEngine.ModelInfo) async {
+        isDownloading = true
+        selectedModelId = model.id
+        downloadProgress = 0
+
+        let pollTask = Task {
+            while !Task.isCancelled {
+                let status = await localEngine.status
+                if case .downloading(let progress) = status {
+                    await MainActor.run { downloadProgress = progress }
+                }
+                try? await Task.sleep(nanoseconds: 200_000_000)
+            }
+        }
+
+        do {
+            try await localEngine.loadModel(model)
+            pollTask.cancel()
+            downloadProgress = 1.0
+        } catch {
+            pollTask.cancel()
+        }
+        isDownloading = false
+    }
+
+    // MARK: - Lifecycle
+
+    private func onAppearSetup() {
+        let ram = ProcessInfo.processInfo.physicalMemory
+        availableRAM = String(format: "%.0f GB", Double(ram) / 1_073_741_824)
+        if ram < 16_000_000_000 && provider.wrappedValue == .local {
+            provider.wrappedValue = .openRouter
+        }
+        apiKey = KeychainHelper.load(key: provider.wrappedValue == .openRouter ? "openrouter_api_key" : "anthropic_api_key") ?? ""
     }
 }
 
