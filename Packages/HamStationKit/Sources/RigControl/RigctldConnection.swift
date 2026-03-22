@@ -36,6 +36,12 @@ public actor RigctldConnection: RigConnection {
 
     private let logger = Logger(subsystem: "com.hamstation.kit", category: "RigctldConnection")
 
+    /// Serializes TCP command send+receive pairs to prevent interleaving.
+    /// Without this, concurrent sendCommand calls (e.g. from polling + user action)
+    /// can both call connection.receive() simultaneously, causing response mix-ups.
+    private var commandQueue: [CheckedContinuation<Void, Never>] = []
+    private var commandInFlight: Bool = false
+
     /// Poll interval in nanoseconds (100ms).
     private static let pollInterval: UInt64 = 100_000_000
 
@@ -61,6 +67,9 @@ public actor RigctldConnection: RigConnection {
 
     // MARK: - RigConnection Protocol
 
+    /// Connection timeout in seconds.
+    private static let connectTimeout: UInt64 = 10_000_000_000 // 10 seconds
+
     public func connect() async throws {
         connectionState = .connecting
         logger.info("Connecting to rigctld at \(self.host):\(self.port)")
@@ -71,24 +80,36 @@ public actor RigctldConnection: RigConnection {
 
         self.connection = nwConnection
 
-        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, any Error>) in
-            nwConnection.stateUpdateHandler = { [weak nwConnection] state in
-                switch state {
-                case .ready:
-                    // Remove the one-shot handler
-                    nwConnection?.stateUpdateHandler = nil
-                    continuation.resume()
-                case .failed(let error):
-                    nwConnection?.stateUpdateHandler = nil
-                    continuation.resume(throwing: RigControlError.connectionFailed(error.localizedDescription))
-                case .cancelled:
-                    nwConnection?.stateUpdateHandler = nil
-                    continuation.resume(throwing: RigControlError.connectionFailed("Connection cancelled"))
-                default:
-                    break
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            group.addTask {
+                try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, any Error>) in
+                    nwConnection.stateUpdateHandler = { [weak nwConnection] state in
+                        switch state {
+                        case .ready:
+                            nwConnection?.stateUpdateHandler = nil
+                            continuation.resume()
+                        case .failed(let error):
+                            nwConnection?.stateUpdateHandler = nil
+                            continuation.resume(throwing: RigControlError.connectionFailed(error.localizedDescription))
+                        case .cancelled:
+                            nwConnection?.stateUpdateHandler = nil
+                            continuation.resume(throwing: RigControlError.connectionFailed("Connection cancelled"))
+                        default:
+                            break
+                        }
+                    }
+                    nwConnection.start(queue: .global(qos: .userInitiated))
                 }
             }
-            nwConnection.start(queue: .global(qos: .userInitiated))
+
+            group.addTask {
+                try await Task.sleep(nanoseconds: Self.connectTimeout)
+                nwConnection.cancel()
+                throw RigControlError.timeout
+            }
+
+            try await group.next()
+            group.cancelAll()
         }
 
         connectionState = .connected
@@ -273,11 +294,36 @@ public actor RigctldConnection: RigConnection {
 
     // MARK: - TCP Communication
 
+    /// Acquire exclusive access for a command send+receive pair.
+    private func acquireCommandLock() async {
+        if commandInFlight {
+            await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+                commandQueue.append(continuation)
+            }
+        }
+        commandInFlight = true
+    }
+
+    /// Release the command lock, resuming the next waiter if any.
+    private func releaseCommandLock() {
+        if let next = commandQueue.first {
+            commandQueue.removeFirst()
+            next.resume()
+        } else {
+            commandInFlight = false
+        }
+    }
+
     /// Send a command and return the raw response string.
+    /// Serialized: only one command can be in-flight at a time to prevent
+    /// interleaved receive() calls on the same NWConnection.
     private func sendCommand(_ command: String) async throws -> String {
         guard let connection else {
             throw RigControlError.notConnected
         }
+
+        await acquireCommandLock()
+        defer { releaseCommandLock() }
 
         let commandData = Data((command + "\n").utf8)
 
@@ -292,19 +338,32 @@ public actor RigctldConnection: RigConnection {
             })
         }
 
-        // Receive response
-        let response = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<String, any Error>) in
-            connection.receive(minimumIncompleteLength: 1, maximumLength: 4096) { data, _, _, error in
-                if let error {
-                    continuation.resume(throwing: RigControlError.connectionFailed(error.localizedDescription))
-                    return
+        // Receive response with timeout
+        let response = try await withThrowingTaskGroup(of: String.self) { group in
+            group.addTask {
+                try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<String, any Error>) in
+                    connection.receive(minimumIncompleteLength: 1, maximumLength: 4096) { data, _, _, error in
+                        if let error {
+                            continuation.resume(throwing: RigControlError.connectionFailed(error.localizedDescription))
+                            return
+                        }
+                        guard let data, let responseString = String(data: data, encoding: .utf8) else {
+                            continuation.resume(throwing: RigControlError.timeout)
+                            return
+                        }
+                        continuation.resume(returning: responseString)
+                    }
                 }
-                guard let data, let responseString = String(data: data, encoding: .utf8) else {
-                    continuation.resume(throwing: RigControlError.timeout)
-                    return
-                }
-                continuation.resume(returning: responseString)
             }
+
+            group.addTask {
+                try await Task.sleep(nanoseconds: 5_000_000_000) // 5 second timeout
+                throw RigControlError.timeout
+            }
+
+            let result = try await group.next()!
+            group.cancelAll()
+            return result
         }
 
         return response

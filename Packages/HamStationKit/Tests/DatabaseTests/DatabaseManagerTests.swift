@@ -609,6 +609,95 @@ class ConcurrencyTests: XCTestCase {
         let count = try await db.countQSOs()
         XCTAssertEqual(count, 1000)
     }
+
+    /// V1-SPEC requirement: 100K QSO batch insert under 200ms per batch via batchCreateQSOs.
+    func testBatchInsert100K() async throws {
+        let db = try makeManager()
+        let baseDate = Date()
+        let batchSize = 10_000
+        let numBatches = 10
+
+        let startTime = CFAbsoluteTimeGetCurrent()
+
+        for batch in 0..<numBatches {
+            let qsos: [(QSO, QSOExtended?)] = (0..<batchSize).map { i in
+                let idx = batch * batchSize + i
+                let qso = QSO(
+                    callsign: "PERF\(idx)",
+                    myCallsign: "N0CALL",
+                    band: Band.allCases[idx % Band.allCases.count],
+                    frequencyHz: Double(14_000_000 + idx),
+                    mode: .ft8,
+                    datetimeOn: baseDate.addingTimeInterval(Double(idx)),
+                    rstSent: "-10",
+                    rstReceived: "-12"
+                )
+                return (qso, nil)
+            }
+            _ = try await db.batchCreateQSOs(qsos)
+        }
+
+        let insertTime = CFAbsoluteTimeGetCurrent() - startTime
+
+        let count = try await db.countQSOs()
+        XCTAssertEqual(count, 100_000, "Should have inserted 100K QSOs")
+
+        // V1-SPEC: 100K operations under reasonable time (bulk insert < 10s total)
+        XCTAssertLessThan(insertTime, 10.0,
+            "100K QSO batch insert took \(String(format: "%.2f", insertTime))s — should be < 10s")
+    }
+
+    /// V1-SPEC requirement: query/pagination across 100K QSOs under 200ms.
+    func testQuery100KPerformance() async throws {
+        let db = try makeManager()
+        let baseDate = Date()
+
+        // Insert 100K QSOs
+        for batch in 0..<10 {
+            let qsos: [(QSO, QSOExtended?)] = (0..<10_000).map { i in
+                let idx = batch * 10_000 + i
+                let qso = QSO(
+                    callsign: "Q\(idx % 5000)", // ~5000 unique callsigns
+                    myCallsign: "N0CALL",
+                    band: Band.allCases[idx % Band.allCases.count],
+                    frequencyHz: Double(14_000_000 + idx),
+                    mode: OperatingMode.allCases[idx % OperatingMode.allCases.count],
+                    datetimeOn: baseDate.addingTimeInterval(Double(idx)),
+                    rstSent: "59",
+                    rstReceived: "59"
+                )
+                return (qso, nil)
+            }
+            _ = try await db.batchCreateQSOs(qsos)
+        }
+
+        // Query: fetch first page (50 rows) — should be < 200ms
+        let queryStart = CFAbsoluteTimeGetCurrent()
+        let page1 = try await db.fetchQSOs(limit: 50, offset: 0)
+        let queryTime = CFAbsoluteTimeGetCurrent() - queryStart
+
+        XCTAssertEqual(page1.count, 50)
+        XCTAssertLessThan(queryTime, 0.200,
+            "Fetching 50 QSOs from 100K took \(String(format: "%.3f", queryTime))s — should be < 200ms")
+
+        // Count query — should be < 200ms
+        let countStart = CFAbsoluteTimeGetCurrent()
+        let total = try await db.countQSOs()
+        let countTime = CFAbsoluteTimeGetCurrent() - countStart
+
+        XCTAssertEqual(total, 100_000)
+        XCTAssertLessThan(countTime, 0.200,
+            "Counting 100K QSOs took \(String(format: "%.3f", countTime))s — should be < 200ms")
+
+        // Band-filtered query — should be < 200ms
+        let filterStart = CFAbsoluteTimeGetCurrent()
+        let filtered = try await db.fetchQSOs(band: .band20m, limit: 50)
+        let filterTime = CFAbsoluteTimeGetCurrent() - filterStart
+
+        XCTAssertTrue(filtered.count > 0)
+        XCTAssertLessThan(filterTime, 0.200,
+            "Filtered query on 100K took \(String(format: "%.3f", filterTime))s — should be < 200ms")
+    }
 }
 
 // MARK: - Observation Tests

@@ -10,12 +10,13 @@ class ContestTests: XCTestCase {
     // MARK: - QSO Logging
 
     func testLogQSOSerialIncrement() async {
-        let engine = ContestEngine(definition: .cqwwCW)
+        // Use CQ WPX which uses rstSerial exchange type
+        let engine = ContestEngine(definition: .cqWPXCW)
 
-        let qso1 = await engine.logQSO(callsign: "W1AW", exchange: "599 05", band: "20m", mode: "CW")
+        let qso1 = await engine.logQSO(callsign: "W1AW", exchange: "599 001", band: "20m", mode: "CW")
         XCTAssertTrue(qso1.exchangeSent.contains("001"))
 
-        let qso2 = await engine.logQSO(callsign: "JA1ABC", exchange: "599 25", band: "20m", mode: "CW")
+        let qso2 = await engine.logQSO(callsign: "JA1ABC", exchange: "599 002", band: "20m", mode: "CW")
         XCTAssertTrue(qso2.exchangeSent.contains("002"))
 
         let serial = await engine.serialNumber

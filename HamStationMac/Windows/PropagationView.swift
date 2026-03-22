@@ -1,7 +1,9 @@
 // PropagationView.swift — Solar/propagation dashboard
-// Gauges for SFI, K-index, A-index, X-ray flux, and per-band conditions.
+// Gauges for SFI, K-index, A-index, X-ray flux, band conditions,
+// grey line map, and sunrise/sunset times.
 
 import SwiftUI
+import MapKit
 import HamStationKit
 
 struct PropagationView: View {
@@ -17,6 +19,11 @@ struct PropagationView: View {
 
                 Divider()
 
+                // Grey line map + sunrise/sunset
+                greyLineSection
+
+                Divider()
+
                 // Band conditions
                 bandConditionsSection
 
@@ -27,13 +34,25 @@ struct PropagationView: View {
                         Text("Last updated: \(solar.updatedAt, format: .dateTime.hour().minute())")
                             .font(.caption)
                             .foregroundStyle(.tertiary)
-                        Button {
-                            // TODO: Refresh solar data
-                        } label: {
-                            Image(systemName: "arrow.clockwise")
-                                .font(.caption)
+                        if appState.isSolarDataLoading {
+                            ProgressView()
+                                .scaleEffect(0.5)
+                                .frame(width: 12, height: 12)
+                        } else {
+                            Button {
+                                Task {
+                                    appState.isSolarDataLoading = true
+                                    defer { appState.isSolarDataLoading = false }
+                                    if let service = appState.networkService {
+                                        appState.solarData = try? await service.fetchSolarData()
+                                    }
+                                }
+                            } label: {
+                                Image(systemName: "arrow.clockwise")
+                                    .font(.caption)
+                            }
+                            .buttonStyle(.borderless)
                         }
-                        .buttonStyle(.borderless)
                     }
                 }
             }
@@ -84,6 +103,116 @@ struct PropagationView: View {
         )
     }
 
+    // MARK: - Grey Line Map
+
+    private var greyLineSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Grey Line")
+                .font(.headline)
+
+            HStack(spacing: 16) {
+                // Map with grey line overlay
+                greyLineMap
+                    .frame(height: 220)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+
+                // Sunrise/sunset for operator's QTH
+                sunTimesPanel
+                    .frame(width: 200)
+            }
+        }
+    }
+
+    private var greyLineMap: some View {
+        let greyLine = SunCalculator.greyLinePath()
+        let coordinates = greyLine.map {
+            CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude)
+        }
+
+        return Map {
+            // Draw the grey line as a polyline
+            if coordinates.count >= 2 {
+                MapPolyline(coordinates: coordinates)
+                    .stroke(.orange, lineWidth: 2)
+            }
+
+            // Mark operator's QTH if available
+            if let grid = appState.gridSquare.isEmpty ? nil : String(appState.gridSquare.prefix(4)),
+               let (lat, lon) = gridToCoordinate(grid) {
+                Annotation("My QTH", coordinate: CLLocationCoordinate2D(latitude: lat, longitude: lon)) {
+                    Image(systemName: "antenna.radiowaves.left.and.right")
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+                }
+            }
+        }
+        .mapStyle(.imagery(elevation: .flat))
+    }
+
+    private var sunTimesPanel: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            if let grid = appState.gridSquare.isEmpty ? nil : String(appState.gridSquare.prefix(4)),
+               let (lat, lon) = gridToCoordinate(grid) {
+                let solar = SunCalculator.solarTimes(latitude: lat, longitude: lon)
+
+                Label("My QTH (\(grid))", systemImage: "location.fill")
+                    .font(.subheadline.bold())
+                    .foregroundStyle(.secondary)
+
+                if solar.isPolarDay {
+                    sunTimeRow(icon: "sun.max.fill", label: "Polar Day", time: nil, color: .yellow)
+                } else if solar.isPolarNight {
+                    sunTimeRow(icon: "moon.fill", label: "Polar Night", time: nil, color: .indigo)
+                } else {
+                    sunTimeRow(icon: "sunrise.fill", label: "Sunrise", time: solar.sunrise, color: .orange)
+                    sunTimeRow(icon: "sunset.fill", label: "Sunset", time: solar.sunset, color: .red)
+
+                    if let dawn = solar.civilDawn {
+                        sunTimeRow(icon: "cloud.sun.fill", label: "Civil Dawn", time: dawn, color: .blue)
+                    }
+                    if let dusk = solar.civilDusk {
+                        sunTimeRow(icon: "cloud.moon.fill", label: "Civil Dusk", time: dusk, color: .indigo)
+                    }
+
+                    Divider()
+
+                    HStack {
+                        Image(systemName: solar.isDaytime ? "sun.max.fill" : "moon.stars.fill")
+                            .foregroundStyle(solar.isDaytime ? .yellow : .indigo)
+                        Text(solar.isDaytime ? "Currently daytime" : "Currently nighttime")
+                            .font(.caption)
+                    }
+                }
+            } else {
+                Text("Set grid square in settings to see sunrise/sunset times")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+            }
+        }
+        .padding()
+        .background(.quaternary.opacity(0.3))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+
+    private func sunTimeRow(icon: String, label: String, time: Date?, color: Color) -> some View {
+        HStack {
+            Image(systemName: icon)
+                .foregroundStyle(color)
+                .frame(width: 20)
+            Text(label)
+                .font(.caption)
+            Spacer()
+            if let time {
+                Text(time, format: .dateTime.hour().minute())
+                    .font(.system(.caption, design: .monospaced))
+                    .foregroundStyle(.secondary)
+                Text("UTC")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+            }
+        }
+    }
+
     // MARK: - Band Conditions
 
     private var bandConditionsSection: some View {
@@ -108,7 +237,7 @@ struct PropagationView: View {
 
             Spacer()
 
-            Text(condition.rawValue)
+            Text(condition.rawValue.capitalized)
                 .font(.caption.bold())
                 .foregroundStyle(conditionColor(condition))
 
@@ -159,10 +288,24 @@ struct PropagationView: View {
         case .poor: return .red
         }
     }
+
+    // MARK: - Grid Helpers
+
+    /// Convert a 4-character Maidenhead grid to (latitude, longitude).
+    private func gridToCoordinate(_ grid: String) -> (Double, Double)? {
+        guard grid.count >= 4 else { return nil }
+        let chars = Array(grid.uppercased())
+        guard let a = chars[0].asciiValue, let b = chars[1].asciiValue,
+              let c = chars[2].asciiValue, let d = chars[3].asciiValue else { return nil }
+
+        let lon = Double(a - 65) * 20.0 + Double(c - 48) * 2.0 + 1.0 - 180.0
+        let lat = Double(b - 65) * 10.0 + Double(d - 48) * 1.0 + 0.5 - 90.0
+        return (lat, lon)
+    }
 }
 
 #Preview {
     PropagationView()
-        .frame(width: 800, height: 600)
+        .frame(width: 900, height: 700)
         .environment(AppState())
 }

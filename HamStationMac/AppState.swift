@@ -193,6 +193,8 @@ final class AppState {
 
     // Solar / propagation (uses HamStationKit.SolarData via PropagationDashboard)
     var solarData: HamStationKit.SolarData? = nil
+    var isSolarDataLoading: Bool = false
+    var networkService: HamStationKit.NetworkService? = nil
 
     // User profile (from first-run wizard / UserDefaults)
     var operatorCallsign: String = "N0CALL"

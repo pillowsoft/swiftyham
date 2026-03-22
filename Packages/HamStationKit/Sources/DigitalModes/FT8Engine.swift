@@ -32,6 +32,9 @@ public actor FT8Engine {
     /// Auto-sequence state (nil when not auto-sequencing).
     public var autoSequence: AutoSequence?
 
+    /// NTP sync status, checked on engine start and periodically.
+    public private(set) var clockSyncStatus: SystemClock.SyncStatus?
+
     /// Phase of the FT8 operating cycle.
     public enum CyclePhase: Sendable, Equatable {
         case idle
@@ -77,12 +80,15 @@ public actor FT8Engine {
         guard !isRunning else { return }
         isRunning = true
 
+        // Check NTP sync before starting — FT8 requires <500ms clock accuracy
+        clockSyncStatus = SystemClock.checkNTPSync(thresholdMs: 500)
+
         cycleTask = Task { [weak self] in
             guard let self else { return }
 
             // Main cycle loop
             while !Task.isCancelled {
-                // 1. Wait for next 15-second boundary
+                // 1. Wait for next 15-second boundary (nanosecond precision)
                 await self.waitForCycleBoundary()
 
                 guard !Task.isCancelled else { break }
@@ -309,19 +315,16 @@ public actor FT8Engine {
     }
 
     /// Wait until the next UTC 15-second cycle boundary.
+    ///
+    /// Uses `SystemClock` (backed by `clock_gettime(CLOCK_REALTIME)`) for sub-microsecond
+    /// UTC alignment and `Task.sleep(nanoseconds:)` for nanosecond-precision sleep,
+    /// instead of the previous `Date()`/`Calendar.component()` approach which truncated
+    /// to milliseconds and lost precision through locale-dependent Calendar extraction.
     private func waitForCycleBoundary() async {
-        let now = Date()
-        let calendar = Calendar(identifier: .gregorian)
-        let second = calendar.component(.second, from: now)
-        let nanosecond = calendar.component(.nanosecond, from: now)
+        let waitNanos = SystemClock.nanosUntilNextBoundary(cycle: .ft8)
 
-        // Next 15-second boundary
-        let currentSlot = second / 15
-        let nextBoundarySecond = (currentSlot + 1) * 15
-        let secondsToWait = Double(nextBoundarySecond - second) - Double(nanosecond) / 1_000_000_000
-
-        if secondsToWait > 0 && secondsToWait <= 15 {
-            try? await Task.sleep(for: .milliseconds(Int(secondsToWait * 1000)))
+        if waitNanos > 0 && waitNanos <= SystemClock.CycleDuration.ft8.nanoseconds {
+            try? await Task.sleep(nanoseconds: waitNanos)
         }
     }
 

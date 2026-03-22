@@ -305,11 +305,16 @@ public actor NetworkService {
         // Fetch K-index (which also provides A-index)
         let (kIndex, aIndex) = try await fetchKIndex(config: config)
 
+        // Fetch X-ray flux and proton flux (non-critical — use empty/nil on failure)
+        let xray = (try? await fetchXrayFlux(config: config)) ?? ""
+        let protons = try? await fetchProtonFlux(config: config)
+
         return SolarData(
             solarFluxIndex: sfi,
             aIndex: aIndex,
             kIndex: kIndex,
-            xrayFlux: "", // X-ray flux requires separate SWPC endpoint
+            xrayFlux: xray,
+            protonFlux: protons,
             updatedAt: Date()
         )
     }
@@ -370,6 +375,59 @@ public actor NetworkService {
         }
 
         return (kIndex, aIndex)
+    }
+
+    private func fetchXrayFlux(config: ServiceConfig) async throws -> String {
+        guard let url = URL(string: "https://services.swpc.noaa.gov/json/goes/primary/xrays-1-day.json") else {
+            throw NetworkServiceError.invalidResponse
+        }
+
+        let request = URLRequest(url: url)
+        let (data, _) = try await client.fetch(request, service: "noaa-xray", config: config)
+
+        // Response is an array of objects with "flux" (scientific notation) and "energy" fields
+        // The most recent entry with energy "0.1-0.8nm" is the standard X-ray flux
+        guard let entries = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else {
+            throw NetworkServiceError.parseError("Could not parse X-ray response")
+        }
+
+        // Find the most recent 0.1-0.8nm entry
+        let longWave = entries.filter { ($0["energy"] as? String) == "0.1-0.8nm" }
+        guard let latest = longWave.last,
+              let flux = latest["flux"] as? Double else {
+            return ""
+        }
+
+        // Convert to NOAA classification (A, B, C, M, X)
+        return classifyXrayFlux(flux)
+    }
+
+    /// Classify X-ray flux into NOAA letter classification.
+    private func classifyXrayFlux(_ flux: Double) -> String {
+        switch flux {
+        case ..<1e-7: return String(format: "A%.1f", flux / 1e-8)
+        case 1e-7..<1e-6: return String(format: "B%.1f", flux / 1e-7)
+        case 1e-6..<1e-5: return String(format: "C%.1f", flux / 1e-6)
+        case 1e-5..<1e-4: return String(format: "M%.1f", flux / 1e-5)
+        default: return String(format: "X%.1f", flux / 1e-4)
+        }
+    }
+
+    private func fetchProtonFlux(config: ServiceConfig) async throws -> Double {
+        guard let url = URL(string: "https://services.swpc.noaa.gov/json/goes/primary/integral-protons-1-day.json") else {
+            throw NetworkServiceError.invalidResponse
+        }
+
+        let request = URLRequest(url: url)
+        let (data, _) = try await client.fetch(request, service: "noaa-proton", config: config)
+
+        guard let entries = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]],
+              let latest = entries.last,
+              let flux = latest["flux"] as? Double else {
+            throw NetworkServiceError.parseError("Could not parse proton flux response")
+        }
+
+        return flux
     }
 
     // MARK: - XML Helpers

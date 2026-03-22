@@ -202,6 +202,178 @@ class FT8MessageParsingTests: XCTestCase {
     }
 }
 
+// MARK: - FT8 Binary Decode Tests
+
+class FT8BinaryDecodeTests: XCTestCase {
+
+    // Helper: pack a callsign into a 28-bit value using FT8 mixed-radix encoding.
+    // Callsigns are normalized to 6 chars with the digit in position 2.
+    private func packCallsign(_ call: String) -> UInt32 {
+        let upper = call.uppercased()
+
+        // Special tokens
+        if upper == "CQ" { return 2 }
+        if upper == "DE" { return 0 }
+        if upper == "QRZ" { return 1 }
+
+        // Normalize: pad so digit is at position 2
+        let callChars = Array(upper)
+        var normalized: String
+        if callChars.count >= 3 && callChars[2].isNumber {
+            normalized = upper
+        } else if callChars.count >= 2 && callChars[1].isNumber {
+            normalized = " " + upper
+        } else {
+            normalized = upper
+        }
+        while normalized.count < 6 { normalized += " " }
+        normalized = String(normalized.prefix(6))
+
+        let nc = Array(normalized)
+        let set0 = Array(" ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") // 37
+        let set1 = Array("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")  // 36
+        let set2 = Array("0123456789")                            // 10
+        let set35 = Array(" ABCDEFGHIJKLMNOPQRSTUVWXYZ")          // 27
+
+        let c0 = UInt32(set0.firstIndex(of: nc[0]) ?? 0)
+        let c1 = UInt32(set1.firstIndex(of: nc[1]) ?? 0)
+        let c2 = UInt32(set2.firstIndex(of: nc[2]) ?? 0)
+        let c3 = UInt32(set35.firstIndex(of: nc[3]) ?? 0)
+        let c4 = UInt32(set35.firstIndex(of: nc[4]) ?? 0)
+        let c5 = UInt32(set35.firstIndex(of: nc[5]) ?? 0)
+
+        let nTokens: UInt32 = 2063592
+        let value = ((((c0 * 36 + c1) * 10 + c2) * 27 + c3) * 27 + c4) * 27 + c5
+        return value + nTokens
+    }
+
+    // Helper: pack a 4-char grid into a 15-bit value
+    private func packGrid(_ grid: String) -> UInt32 {
+        let chars = Array(grid.uppercased())
+        let lonIdx = Int(chars[0].asciiValue! - 65) * 10 + Int(String(chars[2]))!
+        let latIdx = Int(chars[1].asciiValue! - 65) * 10 + Int(String(chars[3]))!
+        return UInt32(lonIdx * 180 + latIdx + 4)
+    }
+
+    // Helper: pack a signal report (-30..+30) into a 15-bit value
+    private func packReport(_ db: Int) -> UInt32 {
+        return UInt32(32404 + db + 30)
+    }
+
+    // Helper: build a 77-bit Type 1 message
+    private func makeType1Bits(call1: UInt32, call2: UInt32, rFlag: Bool, g15: UInt32) -> [UInt8] {
+        var bits = [UInt8](repeating: 0, count: 77)
+        // c28a: bits 0-27
+        for i in 0..<28 {
+            bits[i] = UInt8((call1 >> (27 - i)) & 1)
+        }
+        // c28b: bits 28-55
+        for i in 0..<28 {
+            bits[28 + i] = UInt8((call2 >> (27 - i)) & 1)
+        }
+        // R flag: bit 56
+        bits[56] = rFlag ? 1 : 0
+        // g15: bits 57-71
+        for i in 0..<15 {
+            bits[57 + i] = UInt8((g15 >> (14 - i)) & 1)
+        }
+        // reserved: bits 72-73 = 0
+        // i3: bits 74-76 = 001 (type 1)
+        bits[74] = 0; bits[75] = 0; bits[76] = 1
+        return bits
+    }
+
+    func testDecodeType1WithGrid() {
+        let c1 = packCallsign("CQ")  // CQ token
+        let c2 = packCallsign("W1AW")
+        let g15 = packGrid("FN31")
+        let bits = makeType1Bits(call1: c1, call2: c2, rFlag: false, g15: g15)
+
+        let msg = FT8Message.parse(bits: bits)
+        XCTAssertNotNil(msg, "Should decode Type 1 message")
+        XCTAssertEqual(msg?.callsign1, "CQ")
+        XCTAssertEqual(msg?.callsign2, "W1AW")
+        XCTAssertEqual(msg?.grid, "FN31")
+    }
+
+    func testDecodeType1WithReport() {
+        let c1 = packCallsign("JA1ABC")
+        let c2 = packCallsign("W1AW")
+        let g15 = packReport(-10)
+        let bits = makeType1Bits(call1: c1, call2: c2, rFlag: false, g15: g15)
+
+        let msg = FT8Message.parse(bits: bits)
+        XCTAssertNotNil(msg)
+        XCTAssertEqual(msg?.type, .report)
+        XCTAssertEqual(msg?.callsign1, "JA1ABC")
+        XCTAssertEqual(msg?.callsign2, "W1AW")
+        XCTAssertEqual(msg?.report, "-10")
+    }
+
+    func testDecodeType1RR73() {
+        let c1 = packCallsign("JA1ABC")
+        let c2 = packCallsign("W1AW")
+        let bits = makeType1Bits(call1: c1, call2: c2, rFlag: false, g15: 1) // RR73
+
+        let msg = FT8Message.parse(bits: bits)
+        XCTAssertNotNil(msg)
+        XCTAssertEqual(msg?.type, .rr73)
+        XCTAssertEqual(msg?.extra, "RR73")
+    }
+
+    func testDecodeType1_73() {
+        let c1 = packCallsign("JA1ABC")
+        let c2 = packCallsign("W1AW")
+        let bits = makeType1Bits(call1: c1, call2: c2, rFlag: false, g15: 3) // 73
+
+        let msg = FT8Message.parse(bits: bits)
+        XCTAssertNotNil(msg)
+        XCTAssertEqual(msg?.type, .seventy3)
+        XCTAssertEqual(msg?.extra, "73")
+    }
+
+    func testDecodeType1RogerReport() {
+        let c1 = packCallsign("JA1ABC")
+        let c2 = packCallsign("W1AW")
+        let g15 = packReport(-8)
+        let bits = makeType1Bits(call1: c1, call2: c2, rFlag: true, g15: g15) // R-08
+
+        let msg = FT8Message.parse(bits: bits)
+        XCTAssertNotNil(msg)
+        XCTAssertEqual(msg?.type, .rrReport)
+        XCTAssertTrue(msg?.report?.hasPrefix("R") ?? false, "Roger report should start with R")
+    }
+
+    func testDecodeSpecialCallsigns() {
+        // CQ token = 2
+        let cqBits = makeType1Bits(call1: 2, call2: packCallsign("W1AW"), rFlag: false, g15: packGrid("FN31"))
+        let cqMsg = FT8Message.parse(bits: cqBits)
+        XCTAssertNotNil(cqMsg)
+        XCTAssertEqual(cqMsg?.callsign1, "CQ")
+
+        // DE token = 0
+        let deBits = makeType1Bits(call1: 0, call2: packCallsign("W1AW"), rFlag: false, g15: packGrid("FN31"))
+        let deMsg = FT8Message.parse(bits: deBits)
+        XCTAssertNotNil(deMsg)
+        XCTAssertEqual(deMsg?.callsign1, "DE")
+    }
+
+    func testDecodeBitsWrongLength() {
+        let short = [UInt8](repeating: 0, count: 50)
+        XCTAssertNil(FT8Message.parse(bits: short))
+
+        let long = [UInt8](repeating: 0, count: 100)
+        XCTAssertNil(FT8Message.parse(bits: long))
+    }
+
+    func testDecodeUnknownType() {
+        // i3 = 6 (not a defined type)
+        var bits = [UInt8](repeating: 0, count: 77)
+        bits[74] = 1; bits[75] = 1; bits[76] = 0 // i3 = 6
+        XCTAssertNil(FT8Message.parse(bits: bits))
+    }
+}
+
 // MARK: - FT8Encoder Tests
 
 class FT8EncoderTests: XCTestCase {

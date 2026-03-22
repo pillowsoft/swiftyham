@@ -171,6 +171,22 @@ public struct NaturalLanguageLogger: Sendable {
             return "10m"
         }
 
+        // Try "ON <number>" pattern where number is a known band (e.g., "on 40 CW")
+        let onBandPattern = #"\bON\s+(\d+)\b"#
+        if let regex = try? NSRegularExpression(pattern: onBandPattern),
+           let match = regex.firstMatch(in: input, range: NSRange(input.startIndex..., in: input)),
+           let range = Range(match.range(at: 1), in: input) {
+            let number = String(input[range])
+            let bandMap: [String: String] = [
+                "160": "160m", "80": "80m", "60": "60m", "40": "40m",
+                "30": "30m", "20": "20m", "17": "17m", "15": "15m",
+                "12": "12m", "10": "10m", "6": "6m", "2": "2m"
+            ]
+            if let band = bandMap[number] {
+                return band
+            }
+        }
+
         return nil
     }
 
@@ -300,6 +316,28 @@ public struct NaturalLanguageLogger: Sendable {
         return (nil, nil)
     }
 
+    /// Band numbers that should not be mistaken for RST reports.
+    private static let bandNumbers: Set<String> = [
+        "160", "80", "60", "40", "30", "20", "17", "15", "12", "10", "6", "2"
+    ]
+
+    /// Check if a matched RST-like string is actually a band reference.
+    private static func isBandReference(_ value: String, in input: String, at range: NSRange) -> Bool {
+        let digits = value.filter(\.isNumber)
+        guard bandNumbers.contains(digits) else { return false }
+
+        // Check if followed by "M", "METER", or preceded by "ON"
+        let afterStart = range.location + range.length
+        let remaining = input.dropFirst(afterStart).prefix(10).uppercased()
+        if remaining.hasPrefix("M") || remaining.hasPrefix(" METER") { return true }
+
+        let beforeEnd = range.location
+        let prefix = input.prefix(beforeEnd).suffix(4).uppercased()
+        if prefix.hasSuffix("ON ") || prefix.hasSuffix("ON") { return true }
+
+        return false
+    }
+
     /// Extract a single RST value from text.
     private static func extractSingleRST(from input: String) -> String? {
         // Digital report: "minus X" or "-X"
@@ -314,11 +352,16 @@ public struct NaturalLanguageLogger: Sendable {
             }
         }
 
-        // Standard RST: "5-9" / "59" / "599"
+        // Standard RST: "5-9" / "59" / "599" — skip band numbers
         let rstPattern = #"\b(\d)[\-\s]?(\d)(?:[\-\s]?(\d))?\b"#
-        if let regex = try? NSRegularExpression(pattern: rstPattern),
-           let match = regex.firstMatch(in: input, range: NSRange(input.startIndex..., in: input)) {
-            return normalizeRSTMatch(input, match: match)
+        if let regex = try? NSRegularExpression(pattern: rstPattern) {
+            let matches = regex.matches(in: input, range: NSRange(input.startIndex..., in: input))
+            for match in matches {
+                guard let fullRange = Range(match.range, in: input) else { continue }
+                let fullMatch = String(input[fullRange])
+                if isBandReference(fullMatch, in: input, at: match.range) { continue }
+                return normalizeRSTMatch(input, match: match)
+            }
         }
 
         return nil
@@ -354,7 +397,8 @@ public struct NaturalLanguageLogger: Sendable {
                     let stripped = value.replacingOccurrences(of: "-", with: "")
                         .replacingOccurrences(of: " ", with: "")
                     if stripped.count >= 2, stripped.count <= 3,
-                       let first = stripped.first, first >= "1" && first <= "5" {
+                       let first = stripped.first, first >= "1" && first <= "5",
+                       !isBandReference(value, in: input, at: match.range) {
                         results.append(value)
                     }
                 }

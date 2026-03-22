@@ -140,12 +140,12 @@ public struct CabrilloExporter: Sendable {
         let parts = [
             "QSO:",
             String(format: "%5d", qso.frequency),
-            String(format: "%-2s", qso.mode),
+            qso.mode.padding(toLength: 2, withPad: " ", startingAt: 0),
             qso.date,
             qso.time,
-            String(format: "%-13s", qso.sentCall),
-            String(format: "%-6s", qso.sentExchange),
-            String(format: "%-13s", qso.rcvdCall),
+            qso.sentCall.padding(toLength: 13, withPad: " ", startingAt: 0),
+            qso.sentExchange.padding(toLength: 6, withPad: " ", startingAt: 0),
+            qso.rcvdCall.padding(toLength: 13, withPad: " ", startingAt: 0),
             qso.rcvdExchange
         ]
         return parts.joined(separator: " ")
