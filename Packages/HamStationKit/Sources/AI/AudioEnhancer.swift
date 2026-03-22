@@ -139,27 +139,44 @@ public actor AudioEnhancer {
 
     // MARK: - Internal DSP
 
-    /// Compute magnitude spectrum from windowed audio frame.
-    /// Simplified implementation — production version uses vDSP FFT.
+    /// Compute magnitude spectrum from windowed audio frame using Accelerate vDSP FFT.
     private func computeMagnitudeSpectrum(_ frame: [Float]) -> [Float] {
         let halfSize = fftSize / 2
-        var magnitudes = [Float](repeating: 0, count: halfSize)
+        let log2n = vDSP_Length(log2(Float(fftSize)))
 
-        // Simplified DFT for magnitude estimation
-        for k in 0..<halfSize {
-            var real: Float = 0
-            var imag: Float = 0
-            let freq = 2.0 * Float.pi * Float(k) / Float(fftSize)
+        guard let fftSetup = vDSP_create_fftsetup(log2n, FFTRadix(kFFTRadix2)) else {
+            return [Float](repeating: 0, count: halfSize)
+        }
+        defer { vDSP_destroy_fftsetup(fftSetup) }
 
-            for n in 0..<min(frame.count, fftSize) {
-                real += frame[n] * cos(freq * Float(n))
-                imag -= frame[n] * sin(freq * Float(n))
+        // Prepare split complex input
+        var realPart = [Float](repeating: 0, count: halfSize)
+        var imagPart = [Float](repeating: 0, count: halfSize)
+
+        // Convert interleaved real input to split complex
+        frame.withUnsafeBufferPointer { inputPtr in
+            var splitComplex = DSPSplitComplex(realp: &realPart, imagp: &imagPart)
+            inputPtr.baseAddress!.withMemoryRebound(to: DSPComplex.self, capacity: halfSize) { complexPtr in
+                vDSP_ctoz(complexPtr, 2, &splitComplex, 1, vDSP_Length(halfSize))
             }
-
-            magnitudes[k] = sqrt(real * real + imag * imag) / Float(fftSize)
         }
 
-        return magnitudes
+        // Perform forward FFT
+        var splitComplex = DSPSplitComplex(realp: &realPart, imagp: &imagPart)
+        vDSP_fft_zrip(fftSetup, &splitComplex, 1, log2n, FFTDirection(kFFTDirection_Forward))
+
+        // Compute magnitudes
+        var magnitudes = [Float](repeating: 0, count: halfSize)
+        vDSP_zvmags(&splitComplex, 1, &magnitudes, 1, vDSP_Length(halfSize))
+
+        // Square root and normalize
+        var scale = Float(1.0) / Float(fftSize)
+        vDSP_vsmul(magnitudes, 1, &scale, &magnitudes, 1, vDSP_Length(halfSize))
+        var sqrtMags = [Float](repeating: 0, count: halfSize)
+        var count = Int32(halfSize)
+        vvsqrtf(&sqrtMags, magnitudes, &count)
+
+        return sqrtMags
     }
 
     /// Run the ML model to produce a denoising mask.

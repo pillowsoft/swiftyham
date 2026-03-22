@@ -83,6 +83,7 @@ struct HamStationApp: App {
         do {
             let container = try ServiceContainer()
             self.services = container
+            appState.networkService = container.networkService
 
             let tasks = BackgroundTaskManager(appState: appState, services: container)
             container.backgroundTasks = tasks

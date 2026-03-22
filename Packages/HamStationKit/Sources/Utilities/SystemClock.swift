@@ -211,4 +211,12 @@ public struct SystemClock: Sendable {
             description: "NTP check unavailable — assuming clock is synchronized. Verify in System Preferences > Date & Time."
         )
     }
+
+    /// Async version that runs the blocking sntp check on a background thread.
+    /// Use this from actors to avoid blocking the actor's executor.
+    public static func checkNTPSyncAsync(thresholdMs: Double = 500) async -> SyncStatus {
+        await Task.detached(priority: .utility) {
+            checkNTPSync(thresholdMs: thresholdMs)
+        }.value
+    }
 }

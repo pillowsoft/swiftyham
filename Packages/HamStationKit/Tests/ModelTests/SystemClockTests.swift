@@ -149,8 +149,8 @@ class FT8EngineTimingTests: XCTestCase {
         }
         await engine.start(audioStream: stream)
 
-        // Give the task a moment to begin
-        try? await Task.sleep(nanoseconds: 50_000_000) // 50ms
+        // Give the async NTP check time to complete (sntp takes ~200ms)
+        try? await Task.sleep(nanoseconds: 500_000_000) // 500ms
 
         let postStatus = await engine.clockSyncStatus
         XCTAssertNotNil(postStatus, "Engine should check NTP sync on start")

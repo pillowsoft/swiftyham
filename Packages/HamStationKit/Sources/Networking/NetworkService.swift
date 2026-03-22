@@ -114,6 +114,13 @@ public actor NetworkService {
         self.client = ResilientClient(session: session)
     }
 
+    // MARK: - PSK Reporter
+
+    /// Create a PSK Reporter client using this service's resilient client.
+    public func createPSKReporterClient() -> PSKReporterClient {
+        PSKReporterClient(resilientClient: client)
+    }
+
     // MARK: - Callsign Lookup
 
     /// Look up a callsign using the specified source.

@@ -80,11 +80,11 @@ public actor FT8Engine {
         guard !isRunning else { return }
         isRunning = true
 
-        // Check NTP sync before starting — FT8 requires <500ms clock accuracy
-        clockSyncStatus = SystemClock.checkNTPSync(thresholdMs: 500)
-
         cycleTask = Task { [weak self] in
             guard let self else { return }
+
+            // Check NTP sync asynchronously (avoids blocking the actor with sntp)
+            await self.setClockSyncStatus(await SystemClock.checkNTPSyncAsync(thresholdMs: 500))
 
             // Main cycle loop
             while !Task.isCancelled {
@@ -299,6 +299,10 @@ public actor FT8Engine {
 
     private func setCyclePhase(_ phase: CyclePhase) {
         currentCycle = phase
+    }
+
+    private func setClockSyncStatus(_ status: SystemClock.SyncStatus) {
+        clockSyncStatus = status
     }
 
     private func setRunningFalse() {

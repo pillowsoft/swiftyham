@@ -279,11 +279,19 @@ extension FT8Message {
         case 0 where n3 == 0:
             // Type 0.0: Free text (71 bits -> 13 characters)
             return parseFreeText(bits: bits)
+        case 2:
+            // Type 2: EU VHF contest — c28+c28+R1+g15+serial(10)+i3(3)
+            return parseType2(bits: bits)
+        case 3:
+            // Type 3: ARRL RTTY Roundup — c28+c28+R1+serial/state(13)+i3(3)
+            return parseType3(bits: bits)
         case 4:
             // Type 4: Non-standard callsign (one hashed 12-bit, one 58-bit)
             return parseType4(bits: bits)
+        case 5:
+            // Type 5: EU VHF contest with 6-char grid — c28+c28+R1+g25+i3(3)
+            return parseType5(bits: bits)
         default:
-            // Types 2, 3, 5 (contest formats) and other subtypes not yet implemented
             return nil
         }
     }
@@ -374,6 +382,131 @@ extension FT8Message {
         return FT8Message(
             type: .cq, // Non-standard callsigns are often CQ
             callsign1: callsign,
+            frequency: 0,
+            snr: 0,
+            timeOffset: 0
+        )
+    }
+
+    // MARK: - Type 2: EU VHF Contest
+
+    /// Parse i3=2: EU VHF contest message.
+    /// Layout: c28a(28) + c28b(28) + R(1) + g15(15) + serial(3) + i3(3) = 78 → uses bits 57..73
+    /// Actually: c28 + p1 + c28 + p1 + R1 + g15 + s3 + i3 = 77
+    /// Simplified: extract callsigns + grid, treat serial as part of exchange.
+    private static func parseType2(bits: [UInt8]) -> FT8Message? {
+        let c28a = extractBits(bits, start: 0, length: 28)
+        let c28b = extractBits(bits, start: 28, length: 28)
+        let rFlag = bits[56] == 1
+        let g15 = extractBits(bits, start: 57, length: 15)
+
+        guard let call1 = unpackCallsign28(c28a),
+              let call2 = unpackCallsign28(c28b) else {
+            return nil
+        }
+
+        let (msgType, grid, report, extra) = unpackGrid15(g15, rFlag: rFlag)
+
+        return FT8Message(
+            type: msgType,
+            callsign1: call1,
+            callsign2: call2,
+            grid: grid,
+            report: report,
+            extra: extra,
+            frequency: 0,
+            snr: 0,
+            timeOffset: 0
+        )
+    }
+
+    // MARK: - Type 3: ARRL RTTY Roundup
+
+    /// Parse i3=3: ARRL RTTY Roundup message.
+    /// Layout: c28a(28) + c28b(28) + R(1) + tu(1) + serial/state(13) + reserved(3) + i3(3)
+    /// The 13-bit field encodes either a serial number (1-8191) or a US state/province.
+    private static func parseType3(bits: [UInt8]) -> FT8Message? {
+        let c28a = extractBits(bits, start: 0, length: 28)
+        let c28b = extractBits(bits, start: 28, length: 28)
+        let rFlag = bits[56] == 1
+        let tu = bits[57] // 1 = TU (thank you), 0 = normal
+        let exchange = extractBits(bits, start: 58, length: 13)
+
+        guard let call1 = unpackCallsign28(c28a),
+              let call2 = unpackCallsign28(c28b) else {
+            return nil
+        }
+
+        // Exchange: serial number (1-8000) or state code (8001+)
+        let exchangeStr: String
+        if exchange <= 8000 {
+            exchangeStr = String(format: "%04d", exchange)
+        } else {
+            // US states/provinces/territories encoded as index 8001+
+            let stateIdx = Int(exchange) - 8001
+            let states = ["AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA",
+                         "HI","ID","IL","IN","IA","KS","KY","LA","ME","MD",
+                         "MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ",
+                         "NM","NY","NC","ND","OH","OK","OR","PA","RI","SC",
+                         "SD","TN","TX","UT","VT","VA","WA","WV","WI","WY",
+                         "DC","AB","BC","MB","NB","NL","NS","NT","NU","ON",
+                         "PE","QC","SK","YT"]
+            exchangeStr = stateIdx < states.count ? states[stateIdx] : "\(exchange)"
+        }
+
+        let msgType: MessageType = rFlag ? .rrReport : .report
+        let reportStr = tu == 1 ? "TU \(exchangeStr)" : exchangeStr
+
+        return FT8Message(
+            type: msgType,
+            callsign1: call1,
+            callsign2: call2,
+            report: reportStr,
+            frequency: 0,
+            snr: 0,
+            timeOffset: 0
+        )
+    }
+
+    // MARK: - Type 5: EU VHF Contest with 6-char Grid
+
+    /// Parse i3=5: EU VHF contest with 6-character grid.
+    /// Layout: h12(12) + c28(28) + R(1) + g25(25) + serial(8) + i3(3) = 77
+    /// g25 encodes a full 6-character Maidenhead grid square.
+    private static func parseType5(bits: [UInt8]) -> FT8Message? {
+        // h12 is a hash we can't resolve; c28 is the full callsign
+        let c28 = extractBits(bits, start: 12, length: 28)
+        let rFlag = bits[40] == 1
+        let g25 = extractBits(bits, start: 41, length: 25)
+
+        guard let callsign = unpackCallsign28(c28) else { return nil }
+
+        // Decode 6-char grid from g25
+        // g25 encodes: field(18) * subsquare(24) * grid(10*10) + subsquare(24) * grid(10*10) + grid(100) + subsquare
+        // Simplified: 18*10*24*10*24 = 1,036,800 possible 6-char grids
+        let grid6: String
+        if g25 > 0 && g25 <= 1_036_800 {
+            var val = Int(g25) - 1
+            let subLon = val % 24; val /= 24
+            let numLon = val % 10; val /= 10
+            let subLat = val % 24; val /= 24
+            let numLat = val % 10; val /= 10
+            let fldLon = val % 18; val /= 18
+            let fldLat = val
+
+            let c1 = Character(UnicodeScalar(65 + fldLon)!)
+            let c2 = Character(UnicodeScalar(65 + fldLat)!)
+            let c5 = Character(UnicodeScalar(97 + subLon)!)
+            let c6 = Character(UnicodeScalar(97 + subLat)!)
+            grid6 = "\(c1)\(c2)\(numLon)\(numLat)\(c5)\(c6)"
+        } else {
+            grid6 = "????"
+        }
+
+        return FT8Message(
+            type: rFlag ? .rrReport : .reply,
+            callsign1: callsign,
+            grid: grid6,
             frequency: 0,
             snr: 0,
             timeOffset: 0

@@ -8,6 +8,9 @@ import HamStationKit
 
 struct PropagationView: View {
     @Environment(AppState.self) var appState
+    @State private var greyLineRefreshToken = UUID()
+    @State private var pskReports: [PSKReport] = []
+    @State private var isPSKLoading = false
 
     private let bandOrder = ["160m", "80m", "40m", "30m", "20m", "17m", "15m", "12m", "10m"]
 
@@ -26,6 +29,11 @@ struct PropagationView: View {
 
                 // Band conditions
                 bandConditionsSection
+
+                Divider()
+
+                // PSK Reporter live spots
+                pskReporterSection
 
                 // Last updated
                 if let solar = appState.solarData {
@@ -59,6 +67,13 @@ struct PropagationView: View {
             .padding()
         }
         .navigationTitle("Propagation")
+        .task {
+            // Refresh grey line every 60 seconds
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: 60_000_000_000)
+                greyLineRefreshToken = UUID()
+            }
+        }
     }
 
     // MARK: - Solar Indices
@@ -124,6 +139,8 @@ struct PropagationView: View {
     }
 
     private var greyLineMap: some View {
+        // greyLineRefreshToken dependency triggers recalculation every 60s
+        let _ = greyLineRefreshToken
         let greyLine = SunCalculator.greyLinePath()
         let coordinates = greyLine.map {
             CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude)
@@ -253,6 +270,114 @@ struct PropagationView: View {
             RoundedRectangle(cornerRadius: 6)
                 .stroke(conditionColor(condition).opacity(0.2), lineWidth: 1)
         )
+    }
+
+    // MARK: - PSK Reporter
+
+    private var pskReporterSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("PSK Reporter")
+                    .font(.headline)
+                Spacer()
+                if isPSKLoading {
+                    ProgressView()
+                        .scaleEffect(0.5)
+                        .frame(width: 12, height: 12)
+                } else {
+                    Button {
+                        Task { await fetchPSKReports() }
+                    } label: {
+                        Image(systemName: "arrow.clockwise")
+                            .font(.caption)
+                    }
+                    .buttonStyle(.borderless)
+                }
+            }
+
+            if pskReports.isEmpty {
+                HStack {
+                    Spacer()
+                    VStack(spacing: 4) {
+                        Image(systemName: "antenna.radiowaves.left.and.right")
+                            .font(.title2)
+                            .foregroundStyle(.tertiary)
+                        Text("No signal reports")
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                        if !appState.operatorCallsign.isEmpty && appState.operatorCallsign != "N0CALL" {
+                            Text("Click refresh to fetch reports for \(appState.operatorCallsign)")
+                                .font(.caption2)
+                                .foregroundStyle(.quaternary)
+                        }
+                    }
+                    Spacer()
+                }
+                .frame(minHeight: 60)
+            } else {
+                // Reports table
+                LazyVStack(spacing: 2) {
+                    // Header
+                    HStack {
+                        Text("Callsign").frame(width: 80, alignment: .leading)
+                        Text("Band").frame(width: 50, alignment: .leading)
+                        Text("Mode").frame(width: 40, alignment: .leading)
+                        Text("SNR").frame(width: 40, alignment: .trailing)
+                        Text("Grid").frame(width: 50, alignment: .leading)
+                        Text("Time").frame(width: 50, alignment: .trailing)
+                    }
+                    .font(.caption.bold())
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 8)
+
+                    ForEach(pskReports.prefix(20)) { report in
+                        HStack {
+                            Text(report.senderCallsign)
+                                .font(.system(.caption, design: .monospaced))
+                                .frame(width: 80, alignment: .leading)
+                            Text(report.band)
+                                .font(.system(.caption, design: .monospaced))
+                                .frame(width: 50, alignment: .leading)
+                            Text(report.mode)
+                                .font(.caption)
+                                .frame(width: 40, alignment: .leading)
+                            Text("\(report.snr) dB")
+                                .font(.system(.caption, design: .monospaced))
+                                .foregroundStyle(report.snr >= 0 ? .green : .orange)
+                                .frame(width: 40, alignment: .trailing)
+                            Text(report.senderGrid ?? "—")
+                                .font(.system(.caption, design: .monospaced))
+                                .frame(width: 50, alignment: .leading)
+                            Text(report.timestamp, format: .dateTime.hour().minute())
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                                .frame(width: 50, alignment: .trailing)
+                        }
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 2)
+                    }
+                }
+                .padding(.vertical, 4)
+                .background(.quaternary.opacity(0.2))
+                .clipShape(RoundedRectangle(cornerRadius: 6))
+
+                Text("\(pskReports.count) reports")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+            }
+        }
+    }
+
+    private func fetchPSKReports() async {
+        guard let service = appState.networkService else { return }
+        let callsign = appState.operatorCallsign
+        guard !callsign.isEmpty && callsign != "N0CALL" else { return }
+
+        isPSKLoading = true
+        defer { isPSKLoading = false }
+
+        let client = await service.createPSKReporterClient()
+        pskReports = (try? await client.fetchReports(receiverCallsign: callsign)) ?? []
     }
 
     // MARK: - Color Helpers

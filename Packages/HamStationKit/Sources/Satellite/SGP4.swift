@@ -16,7 +16,7 @@ public struct SGP4: Sendable {
     /// Earth equatorial radius in km.
     static let earthRadiusKm: Double = 6378.137
     /// Earth gravitational parameter (mu) in km^3/min^2.
-    static let mu: Double = 398600.4418 / (60.0 * 60.0)  // convert km^3/s^2 to km^3/min^2
+    static let mu: Double = 398600.4418 * 60.0 * 60.0  // convert km^3/s^2 to km^3/min^2
     /// J2 perturbation coefficient.
     static let j2: Double = 1.08262998905e-3
     /// Speed of light in km/s.
@@ -193,8 +193,8 @@ public struct SGP4: Sendable {
 
         // Distance and velocity in orbital plane
         let r = a * (1.0 - e * cosE)
-        let rdot = sqrt(mu) * e * sinE / (r * sqrt(a))
-        let rfdot = sqrt(mu) * sqrt(1.0 - e * e) / (r)
+        let rdot = sqrt(mu * a) * e * sinE / r
+        let rfdot = sqrt(mu * a) * sqrt(1.0 - e * e) / r
 
         // Argument of latitude
         let argLat = trueAnomaly + argp
