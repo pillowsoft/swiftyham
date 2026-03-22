@@ -30,6 +30,14 @@ final class QSOEntryViewModel {
     var isSaving: Bool = false
     var errorMessage: String? = nil
 
+    // Voice logging
+    var isListening: Bool = false
+    var dictationText: String = ""
+    var showDictationResult: Bool = false
+    #if canImport(Speech)
+    private let speechRecognizer = SpeechRecognizer()
+    #endif
+
     // Editing an existing QSO
     private(set) var editingQSO: QSO? = nil
 
@@ -112,6 +120,61 @@ final class QSOEntryViewModel {
         if name.isEmpty, let n = result.name { name = n }
         if qth.isEmpty, let q = result.qth { qth = q }
         if theirGrid.isEmpty, let g = result.grid { theirGrid = g }
+    }
+
+    /// Fill form fields from natural language text (typed or dictated).
+    func applyNaturalLanguage(_ text: String) {
+        let parsed = NaturalLanguageLogger.parse(text)
+
+        if let call = parsed.callsign { callsign = call }
+        if let b = parsed.band, let band = Band(rawValue: b) { self.band = band }
+        if let m = parsed.mode, let mode = OperatingMode(rawValue: m) { self.mode = mode }
+        if let s = parsed.rstSent { rstSent = s }
+        if let r = parsed.rstReceived { rstReceived = r }
+        if let freq = parsed.frequency {
+            frequencyText = FrequencyFormatter.formatMHz(hz: freq)
+            if let b = Band.band(forFrequency: freq) { band = b }
+        }
+
+        showDictationResult = true
+    }
+
+    /// Start/stop voice dictation for QSO entry.
+    func toggleDictation() async {
+        #if canImport(Speech)
+        if isListening {
+            await speechRecognizer.stopListening()
+            isListening = false
+
+            // Apply the final transcription
+            if !dictationText.isEmpty {
+                applyNaturalLanguage(dictationText)
+            }
+        } else {
+            // Request permission if needed
+            let authorized = await SpeechRecognizer.requestPermission()
+            guard authorized else {
+                errorMessage = "Microphone access required for voice logging. Enable in System Settings > Privacy."
+                return
+            }
+
+            isListening = true
+            dictationText = ""
+            let stream = await speechRecognizer.startListening()
+
+            for await partial in stream {
+                dictationText = partial
+            }
+
+            // Stream ended
+            isListening = false
+            if !dictationText.isEmpty {
+                applyNaturalLanguage(dictationText)
+            }
+        }
+        #else
+        errorMessage = "Speech recognition not available on this system."
+        #endif
     }
 
     /// Checks for duplicate QSOs.
@@ -232,6 +295,9 @@ struct QSOEntryView: View {
 
             Divider()
 
+            // Voice / Natural Language entry
+            voiceEntryBar
+
             // Form
             Form {
                 callsignSection
@@ -282,6 +348,63 @@ struct QSOEntryView: View {
             .padding()
         }
         .frame(width: 480, height: 560)
+    }
+
+    // MARK: - Voice Entry
+
+    private var voiceEntryBar: some View {
+        VStack(spacing: 4) {
+            HStack(spacing: 8) {
+                // Dictate button
+                Button {
+                    Task { await viewModel.toggleDictation() }
+                } label: {
+                    Label(
+                        viewModel.isListening ? "Stop" : "Dictate",
+                        systemImage: viewModel.isListening ? "mic.fill" : "mic"
+                    )
+                    .foregroundStyle(viewModel.isListening ? .red : .primary)
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+
+                // NL text input (type or shows dictation result)
+                TextField(
+                    "e.g. \"Worked JA1ABC on 20m FT8, -10 both ways\"",
+                    text: Bindable(viewModel).dictationText
+                )
+                .font(.caption)
+                .textFieldStyle(.roundedBorder)
+                .onSubmit {
+                    if !viewModel.dictationText.isEmpty {
+                        viewModel.applyNaturalLanguage(viewModel.dictationText)
+                    }
+                }
+
+                // Apply button
+                if !viewModel.dictationText.isEmpty && !viewModel.isListening {
+                    Button {
+                        viewModel.applyNaturalLanguage(viewModel.dictationText)
+                    } label: {
+                        Image(systemName: "arrow.right.circle.fill")
+                    }
+                    .buttonStyle(.borderless)
+                }
+            }
+
+            // Listening indicator
+            if viewModel.isListening {
+                HStack(spacing: 4) {
+                    Circle().fill(.red).frame(width: 6, height: 6)
+                    Text("Listening...")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                }
+            }
+        }
+        .padding(.horizontal)
+        .padding(.vertical, 6)
     }
 
     // MARK: - Sections

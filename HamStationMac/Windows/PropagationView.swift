@@ -27,6 +27,11 @@ struct PropagationView: View {
 
                 Divider()
 
+                // Band recommendations (AI-powered)
+                bandRecommendationsSection
+
+                Divider()
+
                 // Band conditions
                 bandConditionsSection
 
@@ -227,6 +232,64 @@ struct PropagationView: View {
                     .font(.caption2)
                     .foregroundStyle(.tertiary)
             }
+        }
+    }
+
+    // MARK: - Band Recommendations
+
+    private var bandRecommendationsSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Label("Recommended Now", systemImage: "lightbulb.fill")
+                .font(.headline)
+                .foregroundStyle(.orange)
+
+            let recommendations = BandAdvisor.recommend(
+                solarData: appState.solarData,
+                neededEntities: [],
+                dxccEntities: []
+            )
+
+            if recommendations.isEmpty {
+                Text("No band recommendations available — check solar data")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+            } else {
+                ForEach(recommendations.prefix(5)) { rec in
+                    HStack(spacing: 8) {
+                        // Priority indicator
+                        Circle()
+                            .fill(priorityColor(rec.priority))
+                            .frame(width: 8, height: 8)
+
+                        Text(rec.band)
+                            .font(.system(.body, design: .monospaced).bold())
+                            .frame(width: 44, alignment: .leading)
+
+                        Text(rec.mode)
+                            .font(.system(.caption, design: .monospaced))
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(.quaternary)
+                            .clipShape(RoundedRectangle(cornerRadius: 3))
+
+                        Text(rec.reason)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+
+                        Spacer()
+                    }
+                    .padding(.vertical, 2)
+                }
+            }
+        }
+    }
+
+    private func priorityColor(_ priority: BandAdvisor.Recommendation.Priority) -> Color {
+        switch priority {
+        case .high: return .green
+        case .medium: return .yellow
+        case .low: return .orange
         }
     }
 

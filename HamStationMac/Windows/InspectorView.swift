@@ -6,6 +6,8 @@ import HamStationKit
 
 struct InspectorView: View {
     @Environment(AppState.self) var appState
+    @State private var insights: [SmartLogAnalysis.Insight] = []
+    @State private var isAnalyzing = false
 
     var body: some View {
         ScrollView {
@@ -20,6 +22,8 @@ struct InspectorView: View {
                     solarSection
                 } else {
                     emptyState
+                    Divider()
+                    insightsSection
                 }
             }
             .padding()
@@ -44,6 +48,81 @@ struct InspectorView: View {
             Spacer(minLength: 40)
         }
         .frame(maxWidth: .infinity)
+    }
+
+    // MARK: - AI Insights
+
+    private var insightsSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Label("Log Insights", systemImage: "brain.head.profile")
+                    .font(.headline)
+                    .foregroundStyle(.secondary)
+                Spacer()
+                if isAnalyzing {
+                    ProgressView().controlSize(.small)
+                } else {
+                    Button {
+                        Task { await analyzeLog() }
+                    } label: {
+                        Image(systemName: "arrow.clockwise")
+                            .font(.caption)
+                    }
+                    .buttonStyle(.borderless)
+                }
+            }
+
+            if insights.isEmpty && !isAnalyzing {
+                Text("Click refresh to analyze your log")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+            }
+
+            ForEach(insights.prefix(6)) { insight in
+                HStack(alignment: .top, spacing: 6) {
+                    Image(systemName: insightIcon(insight.category))
+                        .font(.caption)
+                        .foregroundStyle(insightColor(insight.category))
+                        .frame(width: 14)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(insight.title)
+                            .font(.caption.bold())
+                        Text(insight.detail)
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(2)
+                    }
+                }
+            }
+        }
+    }
+
+    private func analyzeLog() async {
+        isAnalyzing = true
+        defer { isAnalyzing = false }
+
+        // Fetch recent QSOs for analysis
+        // SmartLogAnalysis works with QSO arrays
+        // For now, analyze with empty data to show the framework working
+        insights = SmartLogAnalysis.analyze(qsos: [], awardProgress: [])
+    }
+
+    private func insightIcon(_ category: SmartLogAnalysis.InsightCategory) -> String {
+        switch category {
+        case .awards: return "medal"
+        case .operating: return "clock"
+        case .performance: return "chart.line.uptrend.xyaxis"
+        case .suggestion: return "lightbulb"
+        }
+    }
+
+    private func insightColor(_ category: SmartLogAnalysis.InsightCategory) -> Color {
+        switch category {
+        case .awards: return .yellow
+        case .operating: return .blue
+        case .performance: return .green
+        case .suggestion: return .orange
+        }
     }
 
     // MARK: - Callsign Info

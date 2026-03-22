@@ -145,7 +145,7 @@ struct AIAssistantView: View {
                 .foregroundStyle(.secondary)
             Spacer()
             Button("Enable in Settings") {
-                // TODO: Open AI settings tab
+                NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
             }
             .font(.callout)
             .buttonStyle(.bordered)
