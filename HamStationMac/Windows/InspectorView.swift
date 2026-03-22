@@ -6,6 +6,7 @@ import HamStationKit
 
 struct InspectorView: View {
     @Environment(AppState.self) var appState
+    @Environment(ServiceContainer.self) var services
     @State private var insights: [SmartLogAnalysis.Insight] = []
     @State private var isAnalyzing = false
 
@@ -101,10 +102,15 @@ struct InspectorView: View {
         isAnalyzing = true
         defer { isAnalyzing = false }
 
-        // Fetch recent QSOs for analysis
-        // SmartLogAnalysis works with QSO arrays
-        // For now, analyze with empty data to show the framework working
-        insights = SmartLogAnalysis.analyze(qsos: [], awardProgress: [])
+        do {
+            // Fetch recent QSOs for analysis (last 1000)
+            let qsos = try await services.database.fetchQSOs(limit: 1000)
+            let progress = try await services.database.fetchAwardProgress(type: "DXCC")
+            insights = SmartLogAnalysis.analyze(qsos: qsos, awardProgress: progress)
+        } catch {
+            // Fall back to empty analysis on error
+            insights = SmartLogAnalysis.analyze(qsos: [], awardProgress: [])
+        }
     }
 
     private func insightIcon(_ category: SmartLogAnalysis.InsightCategory) -> String {

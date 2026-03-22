@@ -38,6 +38,9 @@ public struct AIPrivacySettings: Codable, Sendable, Equatable {
     /// Enable on-device smart log analysis (no cloud).
     public var enableSmartLogAnalysis: Bool
 
+    /// Local model name for Ollama (e.g., "qwen3:8b", "llama3.2:3b").
+    public var localModelName: String?
+
     public init(
         aiEnabled: Bool = false,
         includeCallsign: Bool = true,
@@ -47,7 +50,8 @@ public struct AIPrivacySettings: Codable, Sendable, Equatable {
         apiKey: String? = nil,
         provider: AIProvider = .anthropic,
         enableNaturalLanguageLogging: Bool = false,
-        enableSmartLogAnalysis: Bool = false
+        enableSmartLogAnalysis: Bool = false,
+        localModelName: String? = nil
     ) {
         self.aiEnabled = aiEnabled
         self.includeCallsign = includeCallsign
@@ -58,17 +62,18 @@ public struct AIPrivacySettings: Codable, Sendable, Equatable {
         self.provider = provider
         self.enableNaturalLanguageLogging = enableNaturalLanguageLogging
         self.enableSmartLogAnalysis = enableSmartLogAnalysis
+        self.localModelName = localModelName
     }
 
     /// Supported AI service providers.
     public enum AIProvider: String, Codable, Sendable, CaseIterable {
-        case local      // Qwen3 via MLX (preferred when RAM available)
+        case local      // Local LLM via Ollama (Qwen3, Llama, etc.)
         case openRouter  // Claude via OpenRouter API
-        case anthropic   // Direct Anthropic API (legacy)
+        case anthropic   // Direct Anthropic API
 
         public var displayName: String {
             switch self {
-            case .local: return "Local (Qwen3)"
+            case .local: return "Local (Ollama)"
             case .openRouter: return "OpenRouter (Claude)"
             case .anthropic: return "Anthropic (Direct)"
             }

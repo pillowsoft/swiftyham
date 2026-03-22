@@ -165,7 +165,7 @@ public actor AIAssistant {
         let text: String
         switch privacySettings.provider {
         case .local:
-            text = "Local Qwen3 model not yet configured. Install mlx-lm and download a Qwen3 model to use local AI."
+            text = try await sendViaOllama(context: context)
         case .openRouter:
             text = try await sendViaOpenRouter(context: context)
         case .anthropic:
@@ -176,6 +176,91 @@ public actor AIAssistant {
         let assistantMessage = ChatMessage(role: .assistant, content: text)
         _conversationHistory.append(assistantMessage)
         trimHistory()
+
+        return text
+    }
+
+    // MARK: - Local Backend (Ollama)
+
+    /// Default Ollama model — user can override in settings.
+    private static let defaultOllamaModel = "qwen3:8b"
+
+    /// Ollama API base URL.
+    private static let ollamaBaseURL = "http://localhost:11434"
+
+    private func sendViaOllama(context: AssistantContext) async throws -> String {
+        // Check if Ollama is running by pinging the API
+        guard let healthURL = URL(string: "\(Self.ollamaBaseURL)/api/tags") else {
+            throw AIAssistantError.networkError("Invalid Ollama URL")
+        }
+
+        // Quick health check (500ms timeout)
+        var healthRequest = URLRequest(url: healthURL)
+        healthRequest.timeoutInterval = 2
+
+        let ollamaAvailable: Bool
+        do {
+            let (_, response) = try await URLSession.shared.data(for: healthRequest)
+            ollamaAvailable = (response as? HTTPURLResponse)?.statusCode == 200
+        } catch {
+            ollamaAvailable = false
+        }
+
+        guard ollamaAvailable else {
+            throw AIAssistantError.requestFailed(
+                "Ollama is not running. Install from ollama.com and run: ollama pull \(Self.defaultOllamaModel)"
+            )
+        }
+
+        let systemPrompt = buildSystemPrompt(context: context)
+
+        // Ollama /api/chat uses the same format as OpenAI
+        var apiMessages: [[String: String]] = [
+            ["role": "system", "content": systemPrompt]
+        ]
+        for msg in _conversationHistory {
+            switch msg.role {
+            case .user: apiMessages.append(["role": "user", "content": msg.content])
+            case .assistant: apiMessages.append(["role": "assistant", "content": msg.content])
+            case .system: break
+            }
+        }
+
+        // Use the model from privacy settings, or fall back to default
+        let model = privacySettings.localModelName ?? Self.defaultOllamaModel
+
+        let body: [String: Any] = [
+            "model": model,
+            "messages": apiMessages,
+            "stream": false,
+            "options": [
+                "num_predict": 1024,
+                "temperature": 0.7
+            ]
+        ]
+
+        guard let url = URL(string: "\(Self.ollamaBaseURL)/api/chat") else {
+            throw AIAssistantError.networkError("Invalid Ollama chat URL")
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "content-type")
+        request.timeoutInterval = 120 // Local models can be slow
+
+        guard let httpBody = try? JSONSerialization.data(withJSONObject: body) else {
+            throw AIAssistantError.requestFailed("Failed to serialize request body")
+        }
+        request.httpBody = httpBody
+
+        let (data, response) = try await performRequest(request)
+
+        // Ollama response: {"message": {"role": "assistant", "content": "..."}, ...}
+        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let message = json["message"] as? [String: Any],
+              let text = message["content"] as? String else {
+            throw AIAssistantError.requestFailed("Failed to parse Ollama response")
+        }
 
         return text
     }

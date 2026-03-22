@@ -463,3 +463,18 @@ loc:
     @find Packages/HamStationKit/Tests -name "*.swift" | xargs wc -l | tail -1
     @echo "Mac app lines:"
     @find HamStationMac -name "*.swift" | xargs wc -l | tail -1
+
+# Train Core ML models (requires: pip install numpy coremltools torch)
+train-models:
+    @echo "Training CW decoder model..."
+    python3 Packages/HamStationKit/Scripts/train_cw_decoder.py --output Packages/HamStationKit/Resources/cw_decoder.mlpackage
+    @echo "Training audio denoiser model..."
+    python3 Packages/HamStationKit/Scripts/train_audio_denoiser.py --output Packages/HamStationKit/Resources/audio_denoiser.mlpackage
+
+# Train CW decoder model only
+train-cw:
+    python3 Packages/HamStationKit/Scripts/train_cw_decoder.py --output Packages/HamStationKit/Resources/cw_decoder.mlpackage
+
+# Train audio denoiser model only
+train-denoiser:
+    python3 Packages/HamStationKit/Scripts/train_audio_denoiser.py --output Packages/HamStationKit/Resources/audio_denoiser.mlpackage
