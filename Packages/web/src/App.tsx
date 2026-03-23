@@ -82,10 +82,7 @@ export function App() {
         </main>
 
         {snap.showInspector && (
-          <aside
-            className="border-l overflow-hidden"
-            style={{ width: 280, minWidth: 250, background: 'var(--bg-surface)', borderColor: 'var(--border)' }}
-          >
+          <aside className="w-[280px] min-w-[250px] border-l border-[var(--border)] bg-[var(--bg-surface)] overflow-hidden">
             <Inspector />
           </aside>
         )}
@@ -108,21 +105,9 @@ function Toolbar({ onNewQSO }: { onNewQSO: () => void }) {
   const snap = useSnapshot(appStore);
 
   return (
-    <div
-      className="flex items-center gap-3"
-      style={{
-        height: 36,
-        paddingLeft: 12,
-        paddingRight: 12,
-        background: 'var(--bg-surface)',
-        borderBottom: '1px solid var(--border)',
-      }}
-    >
+    <div className="flex items-center gap-3 h-9 px-3 bg-[var(--bg-surface)] border-b border-[var(--border)]">
       {/* Callsign */}
-      <span
-        className="text-sm font-bold"
-        style={{ fontFamily: 'var(--font-mono)', color: 'var(--accent)' }}
-      >
+      <span className="text-sm font-bold font-mono text-[var(--accent)]">
         {snap.operatorCallsign || 'N0CALL'}
       </span>
 
