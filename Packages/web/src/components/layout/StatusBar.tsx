@@ -8,9 +8,10 @@ export function StatusBar() {
 
   return (
     <div
-      className="flex items-center gap-4 px-3 text-[11px]"
+      className="flex items-center gap-4 px-4 text-[11px]"
       style={{
-        height: 26,
+        height: 30,
+        paddingBottom: 4,
         background: 'var(--bg-surface)',
         borderTop: '1px solid var(--border)',
         color: 'var(--text-muted)',

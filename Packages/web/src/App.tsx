@@ -59,7 +59,7 @@ function Toolbar() {
 
   return (
     <div
-      className="flex items-center gap-3 px-3"
+      className="flex items-center gap-3 px-4"
       style={{
         height: 36,
         background: 'var(--bg-surface)',

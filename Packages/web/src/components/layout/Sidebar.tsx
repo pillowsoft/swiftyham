@@ -27,7 +27,7 @@ export function Sidebar() {
       }}
     >
       {/* App header */}
-      <div className="px-3 py-2 flex items-center gap-2" style={{ borderBottom: '1px solid var(--border)' }}>
+      <div className="px-4 py-2 flex items-center gap-2" style={{ borderBottom: '1px solid var(--border)' }}>
         <Radio size={16} style={{ color: 'var(--accent)' }} />
         <span className="text-xs font-semibold tracking-wide" style={{ color: 'var(--accent)' }}>
           HAMSTATION PRO
@@ -44,13 +44,15 @@ export function Sidebar() {
               key={item.id}
               onClick={() => { appStore.selectedSection = item.id; }}
               className={cn(
-                'w-full flex items-center gap-2 px-3 py-[5px] mx-1 rounded text-[13px] transition-colors cursor-pointer',
+                'w-full flex items-center gap-2 px-3 py-[5px] rounded text-[13px] transition-colors cursor-pointer',
                 'hover:bg-[var(--bg-tertiary)]',
               )}
               style={{
                 background: active ? 'var(--accent-dim)' : undefined,
                 color: active ? 'var(--accent)' : 'var(--text-secondary)',
-                width: 'calc(100% - 8px)',
+                marginLeft: 8,
+                marginRight: 4,
+                width: 'calc(100% - 12px)',
               }}
             >
               <Icon size={15} />
