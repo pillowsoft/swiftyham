@@ -3,6 +3,7 @@ import { useSnapshot } from 'valtio';
 import { appStore, setTheme } from '@/stores/app';
 import { loadDemoData, connectDatabase } from '@/stores/logbook';
 import { useDatabase } from '@/hooks/useDatabase';
+import { useBridge } from '@/hooks/useBridge';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { StatusBar } from '@/components/layout/StatusBar';
 import { Inspector } from '@/components/layout/Inspector';
@@ -35,6 +36,7 @@ export function App() {
   const [showNewQSO, setShowNewQSO] = useState(false);
 
   const dbCtx = useDatabase();
+  useBridge(); // Auto-detect bridge on localhost:8412
 
   // Initialize theme on mount + load fallback demo data
   useEffect(() => {

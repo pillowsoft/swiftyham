@@ -9,3 +9,4 @@ export * from './propagation/sun-calculator';
 export * from './ai/natural-language-logger';
 export * from './contest/engine';
 export * from './satellite/pass-predictor';
+export * from './bridge/client';
