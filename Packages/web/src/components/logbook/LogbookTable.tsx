@@ -53,20 +53,20 @@ export function LogbookTable() {
       <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
         <Search size={14} className="text-muted-foreground" />
         <Input
-          className="flex-1"
+          className="flex-1 h-7 text-xs"
           placeholder="Search callsign or name..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
         <Select value={bandFilter} onValueChange={setBandFilter}>
-          <SelectTrigger className="w-28"><SelectValue placeholder="Band" /></SelectTrigger>
+          <SelectTrigger className="w-24 h-7 text-xs"><SelectValue placeholder="Band" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All</SelectItem>
             {ALL_BANDS.map(b => <SelectItem key={b} value={b} className="font-mono">{b}</SelectItem>)}
           </SelectContent>
         </Select>
         {app.selectedQSOId && (
-          <Button variant="ghost" size="icon" onClick={handleDelete} title="Delete QSO">
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleDelete} title="Delete QSO">
             <Trash2 size={14} className="text-destructive" />
           </Button>
         )}

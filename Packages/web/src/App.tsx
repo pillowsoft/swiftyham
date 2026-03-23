@@ -82,7 +82,7 @@ export function App() {
         </main>
 
         {snap.showInspector && (
-          <aside className="w-[280px] min-w-[250px] border-l border-border bg-card overflow-hidden">
+          <aside className="w-[280px] min-w-[250px] border-l border-[var(--border)] bg-[var(--bg-surface)] overflow-hidden">
             <Inspector />
           </aside>
         )}
@@ -105,15 +105,15 @@ function Toolbar({ onNewQSO }: { onNewQSO: () => void }) {
   const snap = useSnapshot(appStore);
 
   return (
-    <div className="flex items-center gap-3 px-4 py-2 bg-card border-b border-border">
+    <div className="flex items-center gap-3 h-9 px-3 bg-[var(--bg-surface)] border-b border-[var(--border)]">
       {/* Callsign */}
-      <span className="text-sm font-bold font-mono text-primary">
+      <span className="text-sm font-bold font-mono text-[var(--accent)]">
         {snap.operatorCallsign || 'N0CALL'}
       </span>
 
       {/* New QSO button */}
-      <Button onClick={onNewQSO} title="New QSO (⌘N)">
-        <Plus size={16} /> Log QSO
+      <Button size="sm" onClick={onNewQSO} title="New QSO (⌘N)">
+        <Plus size={12} /> Log QSO
       </Button>
 
       <ImportButton />
@@ -122,28 +122,28 @@ function Toolbar({ onNewQSO }: { onNewQSO: () => void }) {
       <div className="flex-1" />
 
       {/* Theme toggle */}
-      <div className="flex items-center gap-1">
-        <Button variant={snap.theme === 'light' ? 'default' : 'ghost'} size="icon" onClick={() => setTheme('light')} title="Light">
-          <Sun size={16} />
+      <div className="flex items-center gap-0.5">
+        <Button variant={snap.theme === 'light' ? 'default' : 'ghost'} size="icon" onClick={() => setTheme('light')} title="Light" className="h-7 w-7">
+          <Sun size={14} />
         </Button>
-        <Button variant={snap.theme === 'dark' ? 'default' : 'ghost'} size="icon" onClick={() => setTheme('dark')} title="Dark">
-          <Moon size={16} />
+        <Button variant={snap.theme === 'dark' ? 'default' : 'ghost'} size="icon" onClick={() => setTheme('dark')} title="Dark" className="h-7 w-7">
+          <Moon size={14} />
         </Button>
-        <Button variant={snap.theme === 'night' ? 'default' : 'ghost'} size="icon" onClick={() => setTheme('night')} title="Night">
-          <Eye size={16} />
+        <Button variant={snap.theme === 'night' ? 'default' : 'ghost'} size="icon" onClick={() => setTheme('night')} title="Night" className="h-7 w-7">
+          <Eye size={14} />
         </Button>
       </div>
 
       <Separator orientation="vertical" className="h-4" />
 
       {/* Inspector toggle */}
-      <Button variant="ghost" size="icon" onClick={() => { appStore.showInspector = !appStore.showInspector; }} title={snap.showInspector ? 'Hide Inspector' : 'Show Inspector'}>
-        {snap.showInspector ? <PanelRightClose size={16} /> : <PanelRight size={16} />}
+      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { appStore.showInspector = !appStore.showInspector; }} title={snap.showInspector ? 'Hide Inspector' : 'Show Inspector'}>
+        {snap.showInspector ? <PanelRightClose size={14} /> : <PanelRight size={14} />}
       </Button>
 
       {/* Settings */}
-      <Button variant="ghost" size="icon" onClick={() => { appStore.showSettings = !appStore.showSettings; }} title="Settings">
-        <Settings size={16} />
+      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { appStore.showSettings = !appStore.showSettings; }} title="Settings">
+        <Settings size={14} />
       </Button>
     </div>
   );
@@ -193,8 +193,8 @@ function ContentView({ section }: { section: string }) {
       );
     default:
       return (
-        <div className="flex flex-col items-center justify-center flex-1 text-muted-foreground">
-          <p className="text-lg font-medium capitalize text-muted-foreground">
+        <div className="flex flex-col items-center justify-center flex-1" style={{ color: 'var(--text-muted)' }}>
+          <p className="text-lg font-medium capitalize" style={{ color: 'var(--text-secondary)' }}>
             {section.replace(/([A-Z])/g, ' $1').trim()}
           </p>
           <p className="text-sm mt-1">Coming soon</p>

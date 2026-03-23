@@ -76,7 +76,7 @@ export function ImportButton() {
           e.target.value = '';
         }}
       />
-      <Button variant="ghost" onClick={() => fileRef.current?.click()} title="Import ADIF">
+      <Button variant="ghost" size="sm" onClick={() => fileRef.current?.click()} title="Import ADIF">
         <Upload size={14} /> Import
       </Button>
     </>
@@ -116,7 +116,7 @@ export function ExportButton() {
   }
 
   return (
-    <Button variant="ghost" onClick={handleExport} title="Export ADIF">
+    <Button variant="ghost" size="sm" onClick={handleExport} title="Export ADIF">
       <Download size={14} /> Export
     </Button>
   );

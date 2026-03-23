@@ -94,14 +94,14 @@
 
 /* Dark theme (default) — mapped to ShadCN variable names */
 .dark {
-  --background: oklch(0.14 0.008 260);
-  --foreground: oklch(0.96 0 0);
-  --card: oklch(0.18 0.008 260);
-  --card-foreground: oklch(0.96 0 0);
-  --popover: oklch(0.22 0.008 260);
-  --popover-foreground: oklch(0.96 0 0);
-  --primary: oklch(0.65 0.22 45);          /* #FF6A00 ham radio orange */
-  --primary-foreground: oklch(1 0 0);
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);          /* #FF6A00 ham radio orange */
+  --primary-foreground: oklch(0.205 0 0);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
@@ -112,10 +112,10 @@
   --destructive-foreground: oklch(0.96 0 0);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.65 0.22 45);             /* orange ring */
+  --ring: oklch(0.556 0 0);             /* orange ring */
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.65 0.22 45);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.269 0 0);
   --sidebar-accent-foreground: oklch(0.985 0 0);
@@ -127,14 +127,6 @@
   --warning-foreground: oklch(0.20 0 0);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
-
-  /* Backward-compatible aliases for old variable names used in SVG and inline styles */
-  --text-muted: var(--muted-foreground);
-  --text-secondary: var(--muted-foreground);
-  --bg-surface: var(--card);
-  --bg-tertiary: var(--muted);
-  --accent-dim: color-mix(in oklch, var(--primary) 15%, transparent);
-  --border-subtle: var(--border);
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);

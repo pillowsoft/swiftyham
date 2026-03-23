@@ -65,9 +65,6 @@ importers:
       recharts:
         specifier: ^2.15.0
         version: 2.15.4(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
-      shadcn:
-        specifier: ^4.1.0
-        version: 4.1.0(typescript@5.9.3)
       sql.js:
         specifier: ^1.14.1
         version: 1.14.1
@@ -96,6 +93,9 @@ importers:
       autoprefixer:
         specifier: ^10.4.0
         version: 10.4.27(postcss@8.5.8)
+      shadcn:
+        specifier: ^4.1.0
+        version: 4.1.0(typescript@5.9.3)
       tailwindcss:
         specifier: ^4.1.0
         version: 4.2.2
