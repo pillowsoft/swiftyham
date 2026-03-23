@@ -45,9 +45,9 @@ export function parseTLE(text: string): TLE[] {
 }
 
 function parseTLELines(name: string, line1: string, line2: string): TLE | null {
-  if (line1.length < 69 || line2.length < 69) return null;
+  if (line1.length < 68 || line2.length < 68) return null;
 
-  try {
+  {
     const catalogNumber = parseInt(line1.substring(2, 7).trim());
     const epochYr = parseInt(line1.substring(18, 20).trim());
     const epochDy = parseFloat(line1.substring(20, 32).trim());
@@ -71,11 +71,9 @@ function parseTLELines(name: string, line1: string, line2: string): TLE | null {
     return {
       id: catalogNumber,
       name: name.trim(),
-      inclination, raan, eccentricity, argOfPerigee, meanAnomaly, meanMotion,
+      inclination, raan, eccentricity, argOfPerigee: argPerigee, meanAnomaly, meanMotion,
       epochYear: fullYear, epochDay: epochDy, bstar, epoch,
     };
-  } catch {
-    return null;
   }
 }
 

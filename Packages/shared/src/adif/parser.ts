@@ -156,8 +156,8 @@ export function parseADIF(input: string, mode: ParseMode = 'lenient'): ParseResu
     currentFields.push({ name: fieldName, value, type: fieldType });
   }
 
-  // Handle trailing fields without EOR
-  if (currentFields.length > 0 && !inHeader) {
+  // Handle trailing fields without EOR (save as record even if no EOH was seen)
+  if (currentFields.length > 0) {
     result.warnings.push({ message: 'File ended without final <EOR> — saving last record' });
     result.records.push(createRecord(currentFields));
   }
