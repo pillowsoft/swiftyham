@@ -195,7 +195,7 @@ export function QSOEntryForm({ open, onOpenChange }: Props) {
           <div>
             <Label>Comment</Label>
             <textarea
-              className="flex w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--accent)] resize-none"
+              className="flex w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
               rows={2}
               value={comment}
               onChange={(e) => setComment(e.target.value)}
@@ -214,7 +214,7 @@ export function QSOEntryForm({ open, onOpenChange }: Props) {
 
 function Label({ children }: { children: React.ReactNode }) {
   return (
-    <label className="text-[10px] uppercase tracking-wider mb-1 block" style={{ color: 'var(--text-muted)', letterSpacing: '0.05em' }}>
+    <label className="text-[10px] uppercase tracking-wider mb-1 block" className="text-muted-foreground">
       {children}
     </label>
   );

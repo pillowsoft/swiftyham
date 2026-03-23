@@ -127,6 +127,14 @@
   --warning-foreground: oklch(0.20 0 0);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
+
+  /* Backward-compatible aliases for old variable names used in SVG and inline styles */
+  --text-muted: var(--muted-foreground);
+  --text-secondary: var(--muted-foreground);
+  --bg-surface: var(--card);
+  --bg-tertiary: var(--muted);
+  --accent-dim: color-mix(in oklch, var(--primary) 15%, transparent);
+  --border-subtle: var(--border);
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);

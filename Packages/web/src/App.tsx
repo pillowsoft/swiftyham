@@ -82,7 +82,7 @@ export function App() {
         </main>
 
         {snap.showInspector && (
-          <aside className="w-[280px] min-w-[250px] border-l border-[var(--border)] bg-[var(--bg-surface)] overflow-hidden">
+          <aside className="w-[280px] min-w-[250px] border-l border-border bg-card overflow-hidden">
             <Inspector />
           </aside>
         )}
@@ -193,8 +193,8 @@ function ContentView({ section }: { section: string }) {
       );
     default:
       return (
-        <div className="flex flex-col items-center justify-center flex-1" style={{ color: 'var(--text-muted)' }}>
-          <p className="text-lg font-medium capitalize" style={{ color: 'var(--text-secondary)' }}>
+        <div className="flex flex-col items-center justify-center flex-1" className="text-muted-foreground">
+          <p className="text-lg font-medium capitalize" className="text-muted-foreground">
             {section.replace(/([A-Z])/g, ' $1').trim()}
           </p>
           <p className="text-sm mt-1">Coming soon</p>
