@@ -5,3 +5,5 @@ export * from './db/repository';
 export * from './satellite/tle-parser';
 export * from './satellite/sgp4';
 export * from './callsign/lookup';
+export * from './propagation/sun-calculator';
+export * from './ai/natural-language-logger';
