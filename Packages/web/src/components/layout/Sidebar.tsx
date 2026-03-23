@@ -27,7 +27,7 @@ export function Sidebar() {
       }}
     >
       {/* App header */}
-      <div className="px-4 py-2 flex items-center gap-2" style={{ borderBottom: '1px solid var(--border)' }}>
+      <div className="py-2 flex items-center gap-2" style={{ paddingLeft: 14, paddingRight: 12, borderBottom: '1px solid var(--border)' }}>
         <Radio size={16} style={{ color: 'var(--accent)' }} />
         <span className="text-xs font-semibold tracking-wide" style={{ color: 'var(--accent)' }}>
           HAMSTATION PRO
@@ -50,9 +50,9 @@ export function Sidebar() {
               style={{
                 background: active ? 'var(--accent-dim)' : undefined,
                 color: active ? 'var(--accent)' : 'var(--text-secondary)',
-                marginLeft: 8,
-                marginRight: 4,
-                width: 'calc(100% - 12px)',
+                marginLeft: 10,
+                marginRight: 6,
+                width: 'calc(100% - 16px)',
               }}
             >
               <Icon size={15} />
