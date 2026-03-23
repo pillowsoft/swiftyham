@@ -59,7 +59,7 @@ export function ContestPanel() {
           <div className="grid grid-cols-4 gap-2 mb-4">
             {[['QSOs', validQsos], ['Points', totalPoints], ['Mults', Math.floor(validQsos * 0.6)], ['Score', totalPoints * Math.max(1, Math.floor(validQsos * 0.6))]].map(([label, value]) => (
               <Card key={label as string}><CardContent className="p-2 text-center">
-                <div className="text-lg font-bold font-mono text-[var(--accent)]">{(value as number).toLocaleString()}</div>
+                <div className="text-lg font-bold font-mono text-primary">{(value as number).toLocaleString()}</div>
                 <Label className="block mt-0.5">{label as string}</Label>
               </CardContent></Card>
             ))}
@@ -89,9 +89,9 @@ export function ContestPanel() {
               <TableBody>
                 {qsos.map((qso, i) => (
                   <TableRow key={qso.id} className={qso.isDupe ? 'opacity-40' : ''}>
-                    <TableCell className="font-mono text-[var(--text-muted)]">{qsos.length - i}</TableCell>
-                    <TableCell className="font-mono text-[var(--text-muted)]">{qso.time}</TableCell>
-                    <TableCell className={`font-mono font-medium ${qso.isDupe ? 'text-[var(--red)]' : 'text-[var(--accent-text)]'}`}>
+                    <TableCell className="font-mono text-muted-foreground">{qsos.length - i}</TableCell>
+                    <TableCell className="font-mono text-muted-foreground">{qso.time}</TableCell>
+                    <TableCell className={`font-mono font-medium ${qso.isDupe ? 'text-destructive' : 'text-primary'}`}>
                       {qso.callsign} {qso.isDupe && <Badge variant="red" className="ml-1">DUPE</Badge>}
                     </TableCell>
                     <TableCell className="font-mono">{qso.exchange}</TableCell>
@@ -106,7 +106,7 @@ export function ContestPanel() {
       )}
 
       {!active && (
-        <div className="flex-1 flex flex-col items-center justify-center text-[var(--text-muted)]">
+        <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground">
           <p className="text-sm">Select a contest and click Start to begin operating</p>
           <p className="text-xs mt-1">Tab between callsign and exchange, Enter to log</p>
         </div>

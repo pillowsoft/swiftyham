@@ -90,10 +90,10 @@ export function QSOEntryForm({ open, onOpenChange }: Props) {
         </DialogHeader>
 
         {/* NL Entry bar */}
-        <div className="flex items-center gap-2 px-5 py-2 -mx-0 rounded-md" className="bg-[var(--bg)]">
-          <Mic size={14} className="text-[var(--text-muted)]" />
+        <div className="flex items-center gap-2 px-5 py-2 -mx-0 rounded-md bg-background">
+          <Mic size={14} className="text-muted-foreground" />
           <input
-            className="flex-1 bg-transparent text-xs outline-none text-[var(--text-secondary)]"
+            className="flex-1 bg-transparent text-xs outline-none text-muted-foreground"
             placeholder='Type: "Worked JA1ABC on 20m FT8, -10 both ways"'
             value={nlText}
             onChange={(e) => setNlText(e.target.value)}
@@ -122,7 +122,7 @@ export function QSOEntryForm({ open, onOpenChange }: Props) {
             <Label>Callsign</Label>
             <div className="flex gap-1.5">
               <Input
-                className="font-mono text-lg font-bold uppercase flex-1 text-[var(--accent)]"
+                className="font-mono text-lg font-bold uppercase flex-1 text-primary"
                 value={callsign}
                 onChange={(e) => setCallsign(e.target.value)}
                 onBlur={() => { if (callsign.trim().length >= 3) handleLookup(); }}
@@ -195,7 +195,7 @@ export function QSOEntryForm({ open, onOpenChange }: Props) {
           <div>
             <Label>Comment</Label>
             <textarea
-              className="flex w-full rounded-md border border-[var(--border)] bg-[var(--bg)] px-3 py-1.5 text-sm text-[var(--text)] placeholder:text-[var(--text-muted)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--accent)] resize-none"
+              className="flex w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--accent)] resize-none"
               rows={2}
               value={comment}
               onChange={(e) => setComment(e.target.value)}

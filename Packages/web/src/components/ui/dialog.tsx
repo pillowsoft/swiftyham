@@ -33,7 +33,7 @@ const DialogContent = React.forwardRef<
       ref={ref}
       className={cn(
         'fixed left-[50%] top-[50%] z-50 w-full max-w-lg translate-x-[-50%] translate-y-[-50%]',
-        'rounded-lg border border-[var(--border)] bg-[var(--bg-surface)] shadow-lg',
+        'rounded-lg border border-border bg-card shadow-lg',
         'data-[state=open]:animate-in data-[state=closed]:animate-out',
         'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
         className
@@ -56,7 +56,7 @@ DialogHeader.displayName = 'DialogHeader';
 
 const DialogFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
-    className={cn('flex items-center justify-end gap-2 px-5 py-3 border-t border-[var(--border)]', className)}
+    className={cn('flex items-center justify-end gap-2 px-5 py-3 border-t border-border', className)}
     {...props}
   />
 );
@@ -80,7 +80,7 @@ const DialogDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Description
     ref={ref}
-    className={cn('text-xs text-[var(--text-secondary)]', className)}
+    className={cn('text-xs text-muted-foreground', className)}
     {...props}
   />
 ));

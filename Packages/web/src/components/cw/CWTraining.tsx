@@ -131,7 +131,7 @@ function KochTrainer() {
         </div>
       )}
 
-      <div className="flex gap-4 text-xs text-[var(--text-muted)]">
+      <div className="flex gap-4 text-xs text-muted-foreground">
         <span>Score: {score.correct}/{score.total}</span>
         <span>Accuracy: {accuracy}%</span>
       </div>
@@ -150,7 +150,7 @@ function CallsignPractice() {
 
   return (
     <div className="max-w-md space-y-4">
-      <p className="text-xs text-[var(--text-secondary)]">Practice copying callsigns. Type what you hear.</p>
+      <p className="text-xs text-muted-foreground">Practice copying callsigns. Type what you hear.</p>
       <Button onClick={newCallsign}><Play size={14} /> New Callsign</Button>
       {current && (
         <div className="space-y-3">
@@ -162,7 +162,7 @@ function CallsignPractice() {
           {result && (
             <div className="flex items-center gap-2">
               <Badge variant={result === 'correct' ? 'green' : 'red'}>{result === 'correct' ? 'Correct!' : 'Wrong'}</Badge>
-              {result === 'wrong' && <span className="font-mono text-sm text-[var(--accent)]">Answer: {current}</span>}
+              {result === 'wrong' && <span className="font-mono text-sm text-primary">Answer: {current}</span>}
             </div>
           )}
         </div>
@@ -177,8 +177,8 @@ function MorseReference() {
       {Object.entries(MORSE).map(([char, code]) => (
         <Card key={char} className="px-2 py-1">
           <div className="flex items-center gap-2 text-xs">
-            <span className="font-mono font-bold w-4 text-center text-[var(--accent)]">{char}</span>
-            <span className="font-mono text-[var(--text-secondary)] tracking-wider">{code}</span>
+            <span className="font-mono font-bold w-4 text-center text-primary">{char}</span>
+            <span className="font-mono text-muted-foreground tracking-wider">{code}</span>
           </div>
         </Card>
       ))}

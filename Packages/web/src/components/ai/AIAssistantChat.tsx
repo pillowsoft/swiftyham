@@ -24,7 +24,7 @@ export function AIAssistantChat() {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      <div className="flex gap-2 p-3 border-b border-[var(--border)]">
+      <div className="flex gap-2 p-3 border-b border-border">
         <Button variant="secondary" size="sm" onClick={() => setInput('Which bands should I try right now?')}><Zap size={12} /> Band advice</Button>
         <Button variant="secondary" size="sm" onClick={() => setInput('Best way to confirm my recent contacts?')}><Medal size={12} /> QSL advice</Button>
         <Button variant="secondary" size="sm" onClick={() => setInput('Analyze my recent operating patterns')}><BarChart3 size={12} /> Log analysis</Button>
@@ -34,9 +34,9 @@ export function AIAssistantChat() {
         <div className="flex flex-col gap-3">
           {messages.map(msg => (
             <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${msg.role === 'user' ? 'bg-[var(--accent-dim)]' : 'bg-[var(--bg-tertiary)]'}`}>
+              <div className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${msg.role === 'user' ? 'bg-primary/10' : 'bg-muted'}`}>
                 <p>{msg.content}</p>
-                <p className="text-[10px] mt-1 text-[var(--text-muted)]">{msg.time}</p>
+                <p className="text-[10px] mt-1 text-muted-foreground">{msg.time}</p>
               </div>
             </div>
           ))}

@@ -20,15 +20,15 @@ export function AwardsDashboard() {
 
         <div className="grid grid-cols-3 gap-3">
           <Card><CardContent className="p-3 text-center">
-            <div className="text-xl font-bold font-mono text-[var(--accent)]">{uniqueCallsigns}</div>
+            <div className="text-xl font-bold font-mono text-primary">{uniqueCallsigns}</div>
             <Label className="mt-1 block">Unique Callsigns</Label>
           </CardContent></Card>
           <Card><CardContent className="p-3 text-center">
-            <div className="text-xl font-bold font-mono text-[var(--accent)]">{uniqueBands}</div>
+            <div className="text-xl font-bold font-mono text-primary">{uniqueBands}</div>
             <Label className="mt-1 block">Bands Used</Label>
           </CardContent></Card>
           <Card><CardContent className="p-3 text-center">
-            <div className="text-xl font-bold font-mono text-[var(--accent)]">{uniqueModes}</div>
+            <div className="text-xl font-bold font-mono text-primary">{uniqueModes}</div>
             <Label className="mt-1 block">Modes Used</Label>
           </CardContent></Card>
         </div>
@@ -41,14 +41,14 @@ export function AwardsDashboard() {
           </TabsList>
           <TabsContent value="dxcc"><DXCCView /></TabsContent>
           <TabsContent value="was">
-            <div className="flex flex-col items-center justify-center py-12 text-[var(--text-muted)]">
-              <p className="text-sm font-medium text-[var(--text-secondary)]">Worked All States</p>
+            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+              <p className="text-sm font-medium text-muted-foreground">Worked All States</p>
               <p className="text-xs mt-1">Track progress toward all 50 US states</p>
             </div>
           </TabsContent>
           <TabsContent value="waz">
-            <div className="flex flex-col items-center justify-center py-12 text-[var(--text-muted)]">
-              <p className="text-sm font-medium text-[var(--text-secondary)]">Worked All Zones</p>
+            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+              <p className="text-sm font-medium text-muted-foreground">Worked All Zones</p>
               <p className="text-xs mt-1">Track progress toward all 40 CQ zones</p>
             </div>
           </TabsContent>
@@ -63,7 +63,7 @@ function DXCCView() {
   const bands = ['160m', '80m', '40m', '20m', '15m', '10m'];
   const callsigns = [...new Set(snap.qsos.map(q => q.callsign))];
 
-  if (callsigns.length === 0) return <p className="text-sm text-[var(--text-muted)]">Log some QSOs to see DXCC progress</p>;
+  if (callsigns.length === 0) return <p className="text-sm text-muted-foreground">Log some QSOs to see DXCC progress</p>;
 
   return (
     <div>
@@ -78,10 +78,10 @@ function DXCCView() {
         <TableBody>
           {callsigns.slice(0, 20).map(call => (
             <TableRow key={call}>
-              <TableCell className="font-mono font-medium text-[var(--accent-text)]">{call}</TableCell>
+              <TableCell className="font-mono font-medium text-primary">{call}</TableCell>
               {bands.map(b => (
                 <TableCell key={b} className="text-center">
-                  <span className={`inline-block w-3 h-3 rounded-sm ${snap.qsos.some(q => q.callsign === call && q.band === b) ? 'bg-[var(--green)]' : 'bg-[var(--border-subtle)]'}`} />
+                  <span className={`inline-block w-3 h-3 rounded-sm ${snap.qsos.some(q => q.callsign === call && q.band === b) ? 'bg-success' : 'bg-border'}`} />
                 </TableCell>
               ))}
             </TableRow>

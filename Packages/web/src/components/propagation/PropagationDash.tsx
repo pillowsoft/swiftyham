@@ -33,10 +33,10 @@ export function PropagationDash() {
           <>
             {/* Solar indices */}
             <div className="grid grid-cols-4 gap-2">
-              <SolarCard label="SFI" value={snap.data.solarFluxIndex} color={snap.data.solarFluxIndex >= 100 ? 'text-[var(--green)]' : 'text-[var(--yellow)]'} />
-              <SolarCard label="K-Index" value={snap.data.kIndex} color={snap.data.kIndex <= 3 ? 'text-[var(--green)]' : snap.data.kIndex <= 4 ? 'text-[var(--yellow)]' : 'text-[var(--red)]'} />
-              <SolarCard label="A-Index" value={snap.data.aIndex} color={snap.data.aIndex <= 7 ? 'text-[var(--green)]' : 'text-[var(--yellow)]'} />
-              <SolarCard label="X-Ray" value={snap.data.xrayFlux || '—'} color="text-[var(--blue)]" />
+              <SolarCard label="SFI" value={snap.data.solarFluxIndex} color={snap.data.solarFluxIndex >= 100 ? 'text-success' : 'text-warning'} />
+              <SolarCard label="K-Index" value={snap.data.kIndex} color={snap.data.kIndex <= 3 ? 'text-success' : snap.data.kIndex <= 4 ? 'text-warning' : 'text-destructive'} />
+              <SolarCard label="A-Index" value={snap.data.aIndex} color={snap.data.aIndex <= 7 ? 'text-success' : 'text-warning'} />
+              <SolarCard label="X-Ray" value={snap.data.xrayFlux || '—'} color="text-ring" />
             </div>
 
             {/* Band conditions */}
@@ -54,14 +54,14 @@ export function PropagationDash() {
             <SunTimesSection />
 
             <Separator />
-            <p className="text-[11px] font-mono text-[var(--text-muted)]">
+            <p className="text-[11px] font-mono text-muted-foreground">
               Last updated: {new Date(snap.data.updatedAt).toLocaleTimeString()} UTC
             </p>
           </>
         ) : snap.isLoading ? (
-          <div className="flex items-center justify-center py-20 text-[var(--text-muted)]">Loading solar data...</div>
+          <div className="flex items-center justify-center py-20 text-muted-foreground">Loading solar data...</div>
         ) : snap.lastError ? (
-          <div className="flex flex-col items-center justify-center py-20 text-[var(--text-muted)]">
+          <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
             <p className="text-sm">Failed to load solar data</p>
             <p className="text-xs mt-1">{snap.lastError}</p>
             <Button variant="secondary" size="sm" className="mt-3" onClick={() => fetchSolarData()}>Retry</Button>
@@ -117,24 +117,24 @@ function SunTimesSection() {
        times.isPolarNight ? <Badge>Polar Night — 24h darkness</Badge> : (
         <div className="grid grid-cols-4 gap-2">
           <Card><CardContent className="p-2 flex items-center gap-1.5">
-            <Sunrise size={14} className="text-[var(--yellow)]" />
+            <Sunrise size={14} className="text-warning" />
             <div><Label>Sunrise</Label><div className="text-xs font-mono mt-0.5">{fmt(times.sunrise)}</div></div>
           </CardContent></Card>
           <Card><CardContent className="p-2 flex items-center gap-1.5">
-            <Sunset size={14} className="text-[var(--red)]" />
+            <Sunset size={14} className="text-destructive" />
             <div><Label>Sunset</Label><div className="text-xs font-mono mt-0.5">{fmt(times.sunset)}</div></div>
           </CardContent></Card>
           <Card><CardContent className="p-2 flex items-center gap-1.5">
-            <Sun size={14} className="text-[var(--blue)]" />
+            <Sun size={14} className="text-ring" />
             <div><Label>Dawn</Label><div className="text-xs font-mono mt-0.5">{fmt(times.civilDawn)}</div></div>
           </CardContent></Card>
           <Card><CardContent className="p-2 flex items-center gap-1.5">
-            <Moon size={14} className="text-[var(--blue)]" />
+            <Moon size={14} className="text-ring" />
             <div><Label>Dusk</Label><div className="text-xs font-mono mt-0.5">{fmt(times.civilDusk)}</div></div>
           </CardContent></Card>
         </div>
       )}
-      <p className="text-[10px] mt-2 text-[var(--text-muted)]">
+      <p className="text-[10px] mt-2 text-muted-foreground">
         {times.isDaytime ? '☀ Currently daytime' : '🌙 Currently nighttime'}
       </p>
     </div>

@@ -12,12 +12,12 @@ export function BridgeGate({ feature, description, children }: Props) {
 
   return (
     <div className="flex-1 flex flex-col items-center justify-center p-8 gap-4">
-      <div className="rounded-full p-4 bg-[var(--accent-dim)]">
-        <Wifi size={32} className="text-[var(--accent)]" />
+      <div className="rounded-full p-4 bg-primary/10">
+        <Wifi size={32} className="text-primary" />
       </div>
       <h3 className="text-base font-semibold">{feature}</h3>
-      <p className="text-sm text-center max-w-sm text-[var(--text-secondary)]">{description}</p>
-      <p className="text-xs text-center max-w-sm text-[var(--text-muted)]">
+      <p className="text-sm text-center max-w-sm text-muted-foreground">{description}</p>
+      <p className="text-xs text-center max-w-sm text-muted-foreground">
         This feature requires the HamStation Bridge CLI running on your Mac.
       </p>
       <Button variant="secondary" size="sm"><Download size={14} /> Download Bridge CLI</Button>

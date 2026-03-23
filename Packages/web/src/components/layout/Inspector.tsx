@@ -14,9 +14,9 @@ export function Inspector() {
 
   if (!qso) {
     return (
-      <div className="flex flex-col items-center justify-center h-full px-4 text-[var(--text-muted)]">
+      <div className="flex flex-col items-center justify-center h-full px-4 text-muted-foreground">
         <Radio size={40} className="mb-3 opacity-30" />
-        <p className="text-sm font-medium text-[var(--text-secondary)]">Select a QSO</p>
+        <p className="text-sm font-medium text-muted-foreground">Select a QSO</p>
         <p className="text-xs mt-1 text-center">Click a row in the logbook to see details here.</p>
       </div>
     );
@@ -28,7 +28,7 @@ export function Inspector() {
         {/* Callsign */}
         <div>
           <Label>Callsign</Label>
-          <div className="text-xl font-bold font-mono text-[var(--accent)] mt-1">{qso.callsign}</div>
+          <div className="text-xl font-bold font-mono text-primary mt-1">{qso.callsign}</div>
         </div>
 
         <Separator />
@@ -63,7 +63,7 @@ export function Inspector() {
         {qso.comment && (
           <div>
             <Label>Comment</Label>
-            <div className="text-xs text-[var(--text-secondary)] mt-1">{qso.comment}</div>
+            <div className="text-xs text-muted-foreground mt-1">{qso.comment}</div>
           </div>
         )}
       </div>

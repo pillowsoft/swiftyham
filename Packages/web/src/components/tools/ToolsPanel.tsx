@@ -17,13 +17,13 @@ export function ToolsPanel() {
         <h2 className="text-base font-semibold">Tools</h2>
         <div className="grid grid-cols-2 gap-3">
           {TOOLS.map(tool => (
-            <Card key={tool.id} className="cursor-pointer hover:bg-[var(--bg-tertiary)] transition-colors"
+            <Card key={tool.id} className="cursor-pointer hover:bg-muted transition-colors"
               onClick={() => { appStore.selectedSection = tool.id; }}>
               <CardContent className="p-3 flex items-start gap-3">
-                <tool.icon size={20} className="text-[var(--accent)] mt-0.5 shrink-0" />
+                <tool.icon size={20} className="text-primary mt-0.5 shrink-0" />
                 <div>
                   <div className="text-sm font-medium">{tool.title}</div>
-                  <div className="text-xs mt-0.5 text-[var(--text-secondary)]">{tool.description}</div>
+                  <div className="text-xs mt-0.5 text-muted-foreground">{tool.description}</div>
                 </div>
               </CardContent>
             </Card>

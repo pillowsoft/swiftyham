@@ -20,11 +20,11 @@ export function Sidebar() {
   const snap = useSnapshot(appStore);
 
   return (
-    <aside className="flex flex-col border-r border-[var(--border)] bg-[var(--bg-surface)] w-[210px] min-w-[180px] h-full">
+    <aside className="flex flex-col border-r border-border bg-card w-[210px] min-w-[180px] h-full">
       {/* App header */}
-      <div className="flex items-center gap-2 px-4 py-2.5 border-b border-[var(--border)]">
-        <Radio size={16} className="text-[var(--accent)]" />
-        <span className="text-xs font-semibold tracking-wide text-[var(--accent)]">
+      <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border">
+        <Radio size={16} className="text-primary" />
+        <span className="text-xs font-semibold tracking-wide text-primary">
           HAMSTATION PRO
         </span>
       </div>
@@ -43,8 +43,8 @@ export function Sidebar() {
                 onClick={() => { appStore.selectedSection = item.id; }}
                 className={cn(
                   'w-full justify-start gap-2 mb-0.5 h-8 text-[13px] font-normal',
-                  active && 'bg-[var(--accent-dim)] text-[var(--accent)] hover:bg-[var(--accent-dim)] hover:text-[var(--accent)]',
-                  !active && 'text-[var(--text-secondary)]',
+                  active && 'bg-primary/10 text-primary hover:bg-primary/10 hover:text-primary',
+                  !active && 'text-muted-foreground',
                 )}
               >
                 <Icon size={15} />

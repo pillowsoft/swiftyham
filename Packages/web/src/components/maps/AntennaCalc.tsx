@@ -30,8 +30,8 @@ function R({ label, value, sub }: { label: string; value: string; sub?: string }
   return (
     <Card><CardContent className="p-3">
       <Label className="block">{label}</Label>
-      <div className="text-base font-bold font-mono text-[var(--accent)] mt-1">{value}</div>
-      {sub && <div className="text-[10px] mt-0.5 text-[var(--text-secondary)]">{sub}</div>}
+      <div className="text-base font-bold font-mono text-primary mt-1">{value}</div>
+      {sub && <div className="text-[10px] mt-0.5 text-muted-foreground">{sub}</div>}
     </CardContent></Card>
   );
 }

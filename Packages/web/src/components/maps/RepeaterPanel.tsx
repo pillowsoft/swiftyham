@@ -45,17 +45,17 @@ export function RepeaterPanel() {
         <div className="space-y-1">
           {filtered.map(r => (
             <Card key={`${r.call}-${r.freq}`} className="flex items-center gap-3 px-3 py-2">
-              <Radio size={16} className="text-[var(--accent)] shrink-0" />
+              <Radio size={16} className="text-primary shrink-0" />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-mono font-medium text-[var(--accent-text)]">{r.call}</span>
+                  <span className="text-sm font-mono font-medium text-primary">{r.call}</span>
                   <Badge variant={r.mode === 'FM' ? 'gray' : r.mode === 'DMR' ? 'green' : 'default'}>{r.mode}</Badge>
                 </div>
-                <div className="text-[11px] text-[var(--text-muted)]">{r.city}, {r.state}</div>
+                <div className="text-[11px] text-muted-foreground">{r.city}, {r.state}</div>
               </div>
               <div className="text-right shrink-0">
                 <div className="text-sm font-mono font-medium">{r.freq}</div>
-                <div className="text-[10px] font-mono text-[var(--text-muted)]">{r.offset} &bull; {r.tone} Hz</div>
+                <div className="text-[10px] font-mono text-muted-foreground">{r.offset} &bull; {r.tone} Hz</div>
               </div>
             </Card>
           ))}

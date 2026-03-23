@@ -9,14 +9,14 @@ export function StatusBar() {
   const logbook = useSnapshot(logbookStore);
 
   return (
-    <div className="flex items-center gap-4 px-4 h-[34px] pb-2 border-t border-[var(--border)] bg-[var(--bg-surface)] text-[11px] font-mono text-[var(--text-muted)]">
+    <div className="flex items-center gap-4 px-4 h-[34px] pb-2 border-t border-border bg-card text-[11px] font-mono text-muted-foreground">
       <span className="flex items-center gap-1.5">
-        <span className={`inline-block w-1.5 h-1.5 rounded-full ${app.bridgeAvailable ? 'bg-[var(--green)]' : 'bg-[var(--text-muted)]'}`} />
+        <span className={`inline-block w-1.5 h-1.5 rounded-full ${app.bridgeAvailable ? 'bg-success' : 'bg-[var(--text-muted)]'}`} />
         Rig: {app.bridgeAvailable ? '14.074.000 USB' : 'Disconnected'}
       </span>
       <Separator orientation="vertical" className="h-3" />
       <span className="flex items-center gap-1.5">
-        <span className={`inline-block w-1.5 h-1.5 rounded-full ${app.bridgeAvailable ? 'bg-[var(--green)]' : 'bg-[var(--text-muted)]'}`} />
+        <span className={`inline-block w-1.5 h-1.5 rounded-full ${app.bridgeAvailable ? 'bg-success' : 'bg-[var(--text-muted)]'}`} />
         Cluster: {app.bridgeAvailable ? 'Connected' : 'Offline'}
       </span>
       <Separator orientation="vertical" className="h-3" />

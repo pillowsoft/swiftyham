@@ -37,10 +37,10 @@ export function SOTAPOTAPanel() {
             <div className="space-y-1">
               {SUMMITS.filter(s => !search || s.name.toLowerCase().includes(search.toLowerCase()) || s.ref.toLowerCase().includes(search.toLowerCase())).map(s => (
                 <Card key={s.ref} className="flex items-center gap-3 px-3 py-2">
-                  <Mountain size={16} className="text-[var(--accent)] shrink-0" />
+                  <Mountain size={16} className="text-primary shrink-0" />
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium truncate">{s.name}</div>
-                    <div className="text-[11px] font-mono text-[var(--text-muted)]">{s.ref} &bull; {s.state}</div>
+                    <div className="text-[11px] font-mono text-muted-foreground">{s.ref} &bull; {s.state}</div>
                   </div>
                   <div className="text-right shrink-0">
                     <div className="text-xs font-mono">{s.alt}m</div>
@@ -54,10 +54,10 @@ export function SOTAPOTAPanel() {
             <div className="space-y-1">
               {PARKS.filter(p => !search || p.name.toLowerCase().includes(search.toLowerCase()) || p.ref.toLowerCase().includes(search.toLowerCase())).map(p => (
                 <Card key={p.ref} className="flex items-center gap-3 px-3 py-2">
-                  <Trees size={16} className="text-[var(--green)] shrink-0" />
+                  <Trees size={16} className="text-success shrink-0" />
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium truncate">{p.name}</div>
-                    <div className="text-[11px] font-mono text-[var(--text-muted)]">{p.ref} &bull; {p.state}</div>
+                    <div className="text-[11px] font-mono text-muted-foreground">{p.ref} &bull; {p.state}</div>
                   </div>
                   <Badge variant="gray">{p.type}</Badge>
                 </Card>
