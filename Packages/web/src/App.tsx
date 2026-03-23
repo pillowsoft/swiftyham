@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useSnapshot } from 'valtio';
 import { appStore, setTheme } from '@/stores/app';
-import { loadDemoData, connectDatabase } from '@/stores/logbook';
+import { logbookStore, loadDemoData, connectDatabase, refreshLogbook } from '@/stores/logbook';
 import { useDatabase } from '@/hooks/useDatabase';
 import { useBridge } from '@/hooks/useBridge';
+import { useBridgeDatabase } from '@/hooks/useBridgeDatabase';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { StatusBar } from '@/components/layout/StatusBar';
 import { Inspector } from '@/components/layout/Inspector';
@@ -35,7 +36,8 @@ export function App() {
   const snap = useSnapshot(appStore);
   const [showNewQSO, setShowNewQSO] = useState(false);
 
-  const dbCtx = useDatabase();
+  const bridgeDb = useBridgeDatabase();
+  const wasmDb = useDatabase();
   useBridge(); // Auto-detect bridge on localhost:8412
 
   // Initialize theme on mount + load fallback demo data
@@ -44,13 +46,23 @@ export function App() {
     loadDemoData(); // Loads in-memory fallback immediately
   }, []);
 
-  // When database is ready, reconnect and reload from DB
+  // Prefer bridge native SQLite (Electrobun) over WASM
   useEffect(() => {
-    if (dbCtx?.isReady) {
-      connectDatabase(dbCtx.repo, dbCtx.save);
-      loadDemoData(); // Now loads from DB
+    if (bridgeDb?.isReady) {
+      // Use bridge for data — fetch QSOs from native SQLite
+      bridgeDb.fetchQSOs({ limit: 200 }).then(({ qsos, totalCount }) => {
+        logbookStore.qsos = qsos;
+        logbookStore.totalCount = totalCount;
+        if (totalCount === 0) loadDemoData();
+      });
+      return;
     }
-  }, [dbCtx?.isReady]);
+    // Fallback: WASM SQLite for pure web
+    if (wasmDb?.isReady) {
+      connectDatabase(wasmDb.repo, wasmDb.save);
+      loadDemoData();
+    }
+  }, [bridgeDb?.isReady, wasmDb?.isReady]);
 
   // Keyboard shortcut: Cmd+N for new QSO
   useEffect(() => {

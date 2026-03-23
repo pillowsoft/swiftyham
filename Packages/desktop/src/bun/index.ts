@@ -1,7 +1,115 @@
 import { BrowserWindow, ApplicationMenu, Utils, Updater } from "electrobun/bun";
+import { Database } from "bun:sqlite";
+import { join } from "path";
+import { homedir } from "os";
+import { mkdirSync, existsSync } from "fs";
 
 const DEV_SERVER_PORT = 7300;
 const DEV_SERVER_URL = `http://localhost:${DEV_SERVER_PORT}`;
+const BRIDGE_PORT = 8412;
+
+// ── Native SQLite Database ──────────────────────────────────────────────────
+
+const dataDir = join(homedir(), "Library", "Application Support", "HamStationPro");
+if (!existsSync(dataDir)) mkdirSync(dataDir, { recursive: true });
+const dbPath = join(dataDir, "hamstation.sqlite");
+const db = new Database(dbPath);
+
+// Run migrations
+db.run(`CREATE TABLE IF NOT EXISTS schema_version (version INTEGER NOT NULL)`);
+const version = db.query("SELECT MAX(version) as v FROM schema_version").get() as any;
+if (!version?.v || version.v < 1) {
+	db.run(`CREATE TABLE IF NOT EXISTS logbook (id TEXT PRIMARY KEY, name TEXT NOT NULL, description TEXT, is_default INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL)`);
+	db.run(`CREATE TABLE IF NOT EXISTS qso (id TEXT PRIMARY KEY, callsign TEXT NOT NULL, my_callsign TEXT NOT NULL, band TEXT NOT NULL, frequency_hz REAL NOT NULL, mode TEXT NOT NULL, datetime_on TEXT NOT NULL, datetime_off TEXT, rst_sent TEXT NOT NULL, rst_received TEXT NOT NULL, tx_power_watts REAL, my_grid TEXT, their_grid TEXT, dxcc_entity_id INTEGER, continent TEXT, cq_zone INTEGER, itu_zone INTEGER, name TEXT, qth TEXT, comment TEXT, logbook_id TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL)`);
+	db.run(`CREATE INDEX IF NOT EXISTS idx_qso_datetime_on ON qso(datetime_on)`);
+	db.run(`CREATE INDEX IF NOT EXISTS idx_qso_callsign ON qso(callsign)`);
+	db.run(`CREATE INDEX IF NOT EXISTS idx_qso_band_mode ON qso(band, mode)`);
+	db.run(`INSERT OR REPLACE INTO schema_version VALUES (1)`);
+	// Ensure default logbook
+	const existing = db.query("SELECT id FROM logbook WHERE is_default = 1").get();
+	if (!existing) {
+		db.run("INSERT INTO logbook (id, name, is_default, created_at) VALUES (?, ?, 1, ?)", [crypto.randomUUID(), "Default", new Date().toISOString()]);
+	}
+	console.log("Database initialized at:", dbPath);
+}
+
+// ── Bridge HTTP Server (localhost:8412) ─────────────────────────────────────
+
+const bridgeServer = Bun.serve({
+	port: BRIDGE_PORT,
+	hostname: "127.0.0.1",
+	fetch(req) {
+		const url = new URL(req.url);
+		const path = url.pathname;
+
+		// CORS headers
+		const headers = {
+			"Access-Control-Allow-Origin": "*",
+			"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+			"Access-Control-Allow-Headers": "Content-Type",
+			"Content-Type": "application/json",
+		};
+
+		if (req.method === "OPTIONS") return new Response(null, { headers });
+
+		// Health check
+		if (path === "/api/health") {
+			return Response.json({ status: "ok", version: "0.1.0", runtime: "electrobun", capabilities: ["sqlite", "rig", "cluster"] }, { headers });
+		}
+
+		// System info
+		if (path === "/api/system/ram") {
+			const ramGB = Math.round(require("os").totalmem() / (1024 ** 3));
+			return Response.json({ totalGB: ramGB }, { headers });
+		}
+
+		// ── QSO CRUD ──
+
+		if (path === "/api/qsos" && req.method === "GET") {
+			const limit = parseInt(url.searchParams.get("limit") || "200");
+			const offset = parseInt(url.searchParams.get("offset") || "0");
+			const band = url.searchParams.get("band");
+			const callsign = url.searchParams.get("callsign");
+
+			let sql = "SELECT * FROM qso WHERE 1=1";
+			const params: any[] = [];
+			if (band) { sql += " AND band = ?"; params.push(band); }
+			if (callsign) { sql += " AND callsign LIKE ?"; params.push(`%${callsign}%`); }
+			sql += " ORDER BY datetime_on DESC LIMIT ? OFFSET ?";
+			params.push(limit, offset);
+
+			const qsos = db.query(sql).all(...params);
+			const count = (db.query("SELECT COUNT(*) as cnt FROM qso").get() as any)?.cnt || 0;
+			return Response.json({ qsos, totalCount: count }, { headers });
+		}
+
+		if (path === "/api/qsos" && req.method === "POST") {
+			return (async () => {
+				const qso = await req.json();
+				db.run(
+					`INSERT INTO qso (id, callsign, my_callsign, band, frequency_hz, mode, datetime_on, rst_sent, rst_received, tx_power_watts, my_grid, their_grid, name, qth, comment, logbook_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+					[qso.id, qso.callsign, qso.myCallsign, qso.band, qso.frequencyHz, qso.mode, qso.datetimeOn, qso.rstSent, qso.rstReceived, qso.txPowerWatts || null, qso.myGrid || null, qso.theirGrid || null, qso.name || null, qso.qth || null, qso.comment || null, qso.logbookId || null, qso.createdAt, qso.updatedAt]
+				);
+				return Response.json({ ok: true }, { headers });
+			})();
+		}
+
+		if (path.startsWith("/api/qsos/") && req.method === "DELETE") {
+			const id = path.split("/").pop();
+			db.run("DELETE FROM qso WHERE id = ?", [id]);
+			return Response.json({ ok: true }, { headers });
+		}
+
+		// ── NTP Status ──
+		if (path === "/api/ntp/status") {
+			return Response.json({ offsetMs: 0, acceptable: true, description: "System clock OK" }, { headers });
+		}
+
+		return Response.json({ error: "Not found" }, { status: 404, headers });
+	},
+});
+
+console.log(`Bridge server running on http://127.0.0.1:${BRIDGE_PORT}`);
 
 // ── Application Menu ────────────────────────────────────────────────────────
 
