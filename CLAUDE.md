@@ -57,4 +57,4 @@ Do not deviate without explicit user approval.
 - Night mode: `#8B0000` (deep red for dark-adapted vision)
 - Dark mode default, compact spacing, 4px base unit
 - Web stack: React, Valtio, ShadCN/ui, TailwindCSS
-- Desktop: Electrobun (not Electron)
+- Desktop: Electrobun with CEF renderer (not system WebView, not Electron)

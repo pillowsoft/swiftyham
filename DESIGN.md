@@ -5,7 +5,7 @@
 - **Who it's for:** Licensed amateur radio operators (hams) who want a modern, cross-platform station management tool
 - **Space/industry:** Amateur radio software (peers: WSJT-X, N1MM+, Log4OM, QRZ.com)
 - **Project type:** Data-dense web application (three-column layout, 17 sidebar sections)
-- **Distribution:** Pure web app, web + bridge CLI, Electrobun desktop app
+- **Distribution:** Pure web app, web + bridge CLI, Electrobun desktop app (CEF renderer)
 
 ## Aesthetic Direction
 - **Direction:** Industrial/Utilitarian — function-first, data-dense, monospace accents, muted palette
@@ -94,5 +94,6 @@
 | Date | Decision | Rationale |
 |------|----------|-----------|
 | 2026-03-23 | Initial design system | Industrial/utilitarian aesthetic for data-dense ham radio app. Geist + Geist Mono for modern cohesive look. Cool dark background (#0F1117) for depth. |
-| 2026-03-23 | Electrobun over Electron | 14MB vs 200MB bundle, <50ms startup, system webview, Bun runtime. Better fit for data-dense app. |
+| 2026-03-23 | Electrobun over Electron | 14MB vs 200MB bundle, <50ms startup, Bun runtime. Better fit for data-dense app. |
+| 2026-03-23 | Electrobun CEF renderer | Use CEF (Chromium) instead of system WebView. WebKit's web inspector has issues; CEF gives full DevTools, consistent rendering, and better debugging. |
 | 2026-03-23 | Night mode as separate theme | Deep red (#8B0000) spectrum preserves dark-adapted vision for night operating. Not just "darker dark mode" — complete color system swap. |
