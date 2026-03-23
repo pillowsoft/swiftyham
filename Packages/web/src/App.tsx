@@ -15,6 +15,7 @@ import { ContestPanel } from '@/components/contest/ContestPanel';
 import { DXClusterPanel } from '@/components/cluster/DXClusterPanel';
 import { FT8Panel } from '@/components/ft8/FT8Panel';
 import { AIAssistantChat } from '@/components/ai/AIAssistantChat';
+import { ImportButton, ExportButton } from '@/components/logbook/ADIFImportExport';
 import { GreatCircleMap } from '@/components/maps/GreatCircleMap';
 import { CWTraining } from '@/components/cw/CWTraining';
 import { AntennaCalc } from '@/components/maps/AntennaCalc';
@@ -111,6 +112,9 @@ function Toolbar({ onNewQSO }: { onNewQSO: () => void }) {
       <Button size="sm" onClick={onNewQSO} title="New QSO (⌘N)">
         <Plus size={12} /> Log QSO
       </Button>
+
+      <ImportButton />
+      <ExportButton />
 
       <div className="flex-1" />
 
