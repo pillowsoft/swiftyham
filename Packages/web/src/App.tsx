@@ -10,6 +10,12 @@ import { QSOEntryForm } from '@/components/logbook/QSOEntryForm';
 import { PropagationDash } from '@/components/propagation/PropagationDash';
 import { AwardsDashboard } from '@/components/awards/AwardsDashboard';
 import { ToolsPanel } from '@/components/tools/ToolsPanel';
+import { SatelliteTracker } from '@/components/satellite/SatelliteTracker';
+import { ContestPanel } from '@/components/contest/ContestPanel';
+import { DXClusterPanel } from '@/components/cluster/DXClusterPanel';
+import { FT8Panel } from '@/components/ft8/FT8Panel';
+import { AIAssistantChat } from '@/components/ai/AIAssistantChat';
+import { BridgeGate } from '@/components/shared/BridgeGate';
 import { SettingsDialog } from '@/components/settings/SettingsDialog';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -138,8 +144,30 @@ function ContentView({ section }: { section: string }) {
       return <PropagationDash />;
     case 'awards':
       return <AwardsDashboard />;
+    case 'contest':
+      return <ContestPanel />;
+    case 'satellite':
+      return <SatelliteTracker />;
+    case 'aiAssistant':
+      return <AIAssistantChat />;
     case 'tools':
       return <ToolsPanel />;
+    case 'dxCluster':
+      return <DXClusterPanel />;
+    case 'ft8':
+      return <FT8Panel />;
+    case 'audioSpectrum':
+      return (
+        <BridgeGate feature="Audio Spectrum" description="Real-time FFT spectrum analyzer and waterfall display. Requires audio input via the bridge.">
+          <div />
+        </BridgeGate>
+      );
+    case 'bandMap':
+      return (
+        <BridgeGate feature="Band Map" description="Live frequency-axis display of DX spots with rig cursor. Requires rig connection via the bridge.">
+          <div />
+        </BridgeGate>
+      );
     default:
       return (
         <div className="flex flex-col items-center justify-center flex-1" style={{ color: 'var(--text-muted)' }}>
