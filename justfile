@@ -27,6 +27,14 @@ desktop:
     sleep 3
     (cd Packages/desktop && bun install --silent && bun run start)
 
+# Run the Swift bridge CLI (port 8412)
+bridge-dev:
+    cd Packages/bridge && swift run
+
+# Build the Swift bridge CLI
+bridge-build:
+    cd Packages/bridge && swift build -c release
+
 # Run the desktop app only — run 'just web-dev' first in another terminal
 desktop-dev:
     cd Packages/desktop && bun install --silent && bun run start
