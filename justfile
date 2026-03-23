@@ -17,6 +17,15 @@ web-dev:
 web-build:
     cd Packages/web && pnpm build
 
+# Run the desktop app (Electrobun + CEF) — run 'just web-dev' first in another terminal
+desktop-dev:
+    cd Packages/desktop && bun install && bun run start
+
+# Build the desktop app for distribution
+desktop-build:
+    cd Packages/web && pnpm build
+    cd Packages/desktop && bun run build
+
 # Generate Xcode project from project.yml
 generate:
     xcodegen generate
