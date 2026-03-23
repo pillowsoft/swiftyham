@@ -64,9 +64,9 @@ export function OnboardingWizard({ open, onComplete }: Props) {
 
         {step === 'welcome' && (
           <div className="text-center py-6 px-4">
-            <Radio size={48} style={{ color: 'var(--accent)' }} className="mx-auto mb-4" />
+            <Radio size={48} className="text-[var(--accent)]" className="mx-auto mb-4" />
             <h2 className="text-xl font-bold mb-2">Welcome to HamStation Pro</h2>
-            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+            <p className="text-sm" className="text-[var(--text-secondary)]">
               The modern amateur radio station for the web.
               Log contacts, track DX, monitor propagation, and more.
             </p>
@@ -145,7 +145,7 @@ export function OnboardingWizard({ open, onComplete }: Props) {
                     <div className="mt-2 mx-auto rounded" style={{ width: 24, height: 4, background: t.accent }} />
                   </div>
                   <div className="text-xs font-medium">{t.label}</div>
-                  <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{t.desc}</div>
+                  <div className="text-[10px]" className="text-[var(--text-muted)]">{t.desc}</div>
                 </button>
               ))}
             </div>
@@ -155,11 +155,11 @@ export function OnboardingWizard({ open, onComplete }: Props) {
         {step === 'done' && (
           <div className="text-center py-6 px-4">
             <div className="rounded-full p-3 mx-auto w-fit mb-4" style={{ background: 'color-mix(in srgb, var(--green) 15%, transparent)' }}>
-              <Check size={32} style={{ color: 'var(--green)' }} />
+              <Check size={32} className="text-[var(--green)]" />
             </div>
             <h2 className="text-xl font-bold mb-2">You're All Set!</h2>
-            <div className="space-y-1 text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>
-              {callsign && <p>Callsign: <span className="font-mono font-bold" style={{ color: 'var(--accent)' }}>{callsign.toUpperCase()}</span></p>}
+            <div className="space-y-1 text-sm mb-6" className="text-[var(--text-secondary)]">
+              {callsign && <p>Callsign: <span className="font-mono font-bold" className="text-[var(--accent)]">{callsign.toUpperCase()}</span></p>}
               {grid && <p>Grid: <span className="font-mono">{grid}</span></p>}
               <p>License: {license}</p>
             </div>
@@ -176,7 +176,7 @@ export function OnboardingWizard({ open, onComplete }: Props) {
               <ArrowLeft size={14} /> Back
             </Button>
             <div className="flex-1" />
-            <Button variant="ghost" size="sm" onClick={finish} className="text-xs" style={{ color: 'var(--text-muted)' }}>
+            <Button variant="ghost" size="sm" onClick={finish} className="text-xs" className="text-[var(--text-muted)]">
               Skip
             </Button>
             <Button onClick={next}>
@@ -190,5 +190,5 @@ export function OnboardingWizard({ open, onComplete }: Props) {
 }
 
 function Label({ children }: { children: React.ReactNode }) {
-  return <label className="text-[10px] uppercase tracking-wider mb-1 block" style={{ color: 'var(--text-muted)' }}>{children}</label>;
+  return <label className="text-[10px] uppercase tracking-wider mb-1 block" className="text-[var(--text-muted)]">{children}</label>;
 }

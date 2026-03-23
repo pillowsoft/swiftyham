@@ -1,168 +1,97 @@
 import { useState } from 'react';
 import { useSnapshot } from 'valtio';
 import { appStore, saveProfile, type Theme, setTheme } from '@/stores/app';
-import { X } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
-interface Props {
-  onClose: () => void;
-}
-
-type SettingsTab = 'general' | 'ai' | 'about';
+interface Props { onClose: () => void; }
+type Tab = 'general' | 'ai' | 'about';
 
 export function SettingsDialog({ onClose }: Props) {
   const snap = useSnapshot(appStore);
-  const [tab, setTab] = useState<SettingsTab>('general');
+  const [tab, setTab] = useState<Tab>('general');
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.6)' }}>
-      <div
-        className="rounded-lg overflow-hidden flex flex-col"
-        style={{ width: 520, height: 420, background: 'var(--bg-surface)', border: '1px solid var(--border)' }}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid var(--border)' }}>
-          <span className="font-semibold text-sm">Settings</span>
-          <button onClick={onClose} className="cursor-pointer" style={{ color: 'var(--text-muted)' }}>
-            <X size={16} />
-          </button>
-        </div>
-
+    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent className="max-w-lg h-[420px] flex flex-col p-0">
+        <DialogHeader className="px-5 pt-5 pb-3">
+          <DialogTitle>Settings</DialogTitle>
+        </DialogHeader>
         <div className="flex flex-1 overflow-hidden">
-          {/* Tab list */}
-          <div className="w-32 py-2 flex-shrink-0" style={{ borderRight: '1px solid var(--border)', background: 'var(--bg)' }}>
-            {(['general', 'ai', 'about'] as SettingsTab[]).map(t => (
-              <button
-                key={t}
-                onClick={() => setTab(t)}
-                className="w-full text-left px-3 py-1.5 text-xs capitalize cursor-pointer"
-                style={{
-                  background: tab === t ? 'var(--accent-dim)' : 'transparent',
-                  color: tab === t ? 'var(--accent)' : 'var(--text-secondary)',
-                }}
-              >
+          <div className="w-32 py-2 shrink-0 border-r border-[var(--border)] bg-[var(--bg)]">
+            {(['general', 'ai', 'about'] as Tab[]).map(t => (
+              <Button key={t} variant={tab === t ? 'default' : 'ghost'} size="sm"
+                className="w-full justify-start rounded-none capitalize" onClick={() => setTab(t)}>
                 {t}
-              </button>
+              </Button>
             ))}
           </div>
-
-          {/* Tab content */}
-          <div className="flex-1 overflow-y-auto p-4">
+          <ScrollArea className="flex-1 p-4">
             {tab === 'general' && <GeneralSettings />}
             {tab === 'ai' && <AISettings />}
             {tab === 'about' && <AboutSettings />}
-          </div>
+          </ScrollArea>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
 function GeneralSettings() {
   const snap = useSnapshot(appStore);
-
   return (
-    <div className="flex flex-col gap-4">
-      <SettingsField label="Callsign">
-        <input
-          className="w-full rounded px-2 py-1.5 text-sm outline-none"
-          style={{ fontFamily: 'var(--font-mono)', background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text)', textTransform: 'uppercase' }}
-          value={snap.operatorCallsign}
-          onChange={(e) => { appStore.operatorCallsign = e.target.value.toUpperCase(); }}
-          onBlur={saveProfile}
-          placeholder="W1AW"
-        />
-      </SettingsField>
-
-      <SettingsField label="Grid Square">
-        <input
-          className="w-full rounded px-2 py-1.5 text-sm outline-none"
-          style={{ fontFamily: 'var(--font-mono)', background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text)' }}
-          value={snap.gridSquare}
-          onChange={(e) => { appStore.gridSquare = e.target.value; }}
-          onBlur={saveProfile}
-          placeholder="FN31pr"
-        />
-      </SettingsField>
-
-      <SettingsField label="Name">
-        <input
-          className="w-full rounded px-2 py-1.5 text-sm outline-none"
-          style={{ background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text)' }}
-          value={snap.operatorName}
-          onChange={(e) => { appStore.operatorName = e.target.value; }}
-          onBlur={saveProfile}
-        />
-      </SettingsField>
-
-      <SettingsField label="Theme">
+    <div className="space-y-4">
+      <div><Label className="block mb-1.5">Callsign</Label>
+        <Input className="font-mono uppercase" value={snap.operatorCallsign} placeholder="W1AW"
+          onChange={(e) => { appStore.operatorCallsign = e.target.value.toUpperCase(); }} onBlur={saveProfile} /></div>
+      <div><Label className="block mb-1.5">Grid Square</Label>
+        <Input className="font-mono" value={snap.gridSquare} placeholder="FN31pr"
+          onChange={(e) => { appStore.gridSquare = e.target.value; }} onBlur={saveProfile} /></div>
+      <div><Label className="block mb-1.5">Name</Label>
+        <Input value={snap.operatorName} onChange={(e) => { appStore.operatorName = e.target.value; }} onBlur={saveProfile} /></div>
+      <div><Label className="block mb-1.5">Theme</Label>
         <div className="flex gap-2">
           {(['dark', 'light', 'night'] as Theme[]).map(t => (
-            <button
-              key={t}
-              onClick={() => setTheme(t)}
-              className="px-3 py-1 rounded text-xs capitalize cursor-pointer"
-              style={{
-                background: snap.theme === t ? 'var(--accent-dim)' : 'transparent',
-                color: snap.theme === t ? 'var(--accent)' : 'var(--text-secondary)',
-                border: `1px solid ${snap.theme === t ? 'var(--accent)' : 'var(--border)'}`,
-              }}
-            >
-              {t}
-            </button>
+            <Button key={t} variant={snap.theme === t ? 'default' : 'secondary'} size="sm" className="capitalize" onClick={() => setTheme(t)}>{t}</Button>
           ))}
         </div>
-      </SettingsField>
+      </div>
     </div>
   );
 }
 
 function AISettings() {
   return (
-    <div className="flex flex-col gap-4">
-      <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-        AI features use on-device models or cloud APIs. Configure your preferred backend and privacy settings.
-      </p>
-      <SettingsField label="AI Provider">
-        <select
-          className="w-full rounded px-2 py-1.5 text-sm outline-none cursor-pointer"
-          style={{ background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text)' }}
-        >
-          <option>Local (MLX — requires bridge)</option>
-          <option>OpenRouter (Claude)</option>
-          <option>Anthropic (Direct)</option>
-        </select>
-      </SettingsField>
-      <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
-        Local AI requires the HamStation Bridge CLI running on your Mac.
-      </p>
+    <div className="space-y-4">
+      <p className="text-xs text-[var(--text-secondary)]">AI features use on-device models or cloud APIs.</p>
+      <div><Label className="block mb-1.5">AI Provider</Label>
+        <Select defaultValue="local">
+          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="local">Local (MLX — requires bridge)</SelectItem>
+            <SelectItem value="openrouter">OpenRouter (Claude)</SelectItem>
+            <SelectItem value="anthropic">Anthropic (Direct)</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <p className="text-[10px] text-[var(--text-muted)]">Local AI requires the HamStation Bridge CLI.</p>
     </div>
   );
 }
 
 function AboutSettings() {
   return (
-    <div className="flex flex-col gap-3">
-      <div className="text-center py-4">
-        <div className="text-lg font-bold" style={{ color: 'var(--accent)' }}>HamStation Pro</div>
-        <div className="text-xs" style={{ color: 'var(--text-muted)' }}>Web Edition • v0.1.0</div>
-      </div>
-      <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-        The modern amateur radio station for the web. Log contacts, track DX, monitor propagation, decode digital modes, and more.
-      </p>
-      <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
-        MIT License • Built with React, Valtio, and ShadCN/ui
-      </p>
-    </div>
-  );
-}
-
-function SettingsField({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <label className="text-[10px] uppercase tracking-wider mb-1 block" style={{ color: 'var(--text-muted)' }}>
-        {label}
-      </label>
-      {children}
+    <div className="space-y-3 text-center py-4">
+      <div className="text-lg font-bold text-[var(--accent)]">HamStation Pro</div>
+      <div className="text-xs text-[var(--text-muted)]">Web Edition &bull; v0.1.0</div>
+      <Separator />
+      <p className="text-xs text-[var(--text-secondary)]">The modern amateur radio station for the web.</p>
+      <p className="text-[10px] text-[var(--text-muted)]">MIT License &bull; Built with React, Valtio, and ShadCN/ui</p>
     </div>
   );
 }

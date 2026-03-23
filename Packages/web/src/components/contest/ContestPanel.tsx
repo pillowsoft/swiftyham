@@ -1,27 +1,19 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { Play, Square } from 'lucide-react';
 
-interface ContestQSO {
-  id: string;
-  callsign: string;
-  exchange: string;
-  band: string;
-  time: string;
-  isDupe: boolean;
-  points: number;
-}
-
+interface ContestQSO { id: string; callsign: string; exchange: string; band: string; time: string; isDupe: boolean; points: number; }
 const CONTESTS = [
-  { id: 'cqww-cw', name: 'CQ WW CW' },
-  { id: 'cqww-ssb', name: 'CQ WW SSB' },
-  { id: 'arrl-dx', name: 'ARRL DX' },
-  { id: 'naqp-cw', name: 'NAQP CW' },
-  { id: 'wpx-cw', name: 'CQ WPX CW' },
+  { id: 'cqww-cw', name: 'CQ WW CW' }, { id: 'cqww-ssb', name: 'CQ WW SSB' },
+  { id: 'arrl-dx', name: 'ARRL DX' }, { id: 'naqp-cw', name: 'NAQP CW' }, { id: 'wpx-cw', name: 'CQ WPX CW' },
 ];
 
 export function ContestPanel() {
@@ -34,19 +26,9 @@ export function ContestPanel() {
 
   function logContact() {
     if (!callsign.trim()) return;
-    const qso: ContestQSO = {
-      id: crypto.randomUUID(),
-      callsign: callsign.toUpperCase(),
-      exchange: exchange || '599',
-      band: '20m',
-      time: new Date().toISOString().slice(11, 16),
-      isDupe: qsos.some(q => q.callsign === callsign.toUpperCase()),
-      points: 3,
-    };
-    setQsos([qso, ...qsos]);
-    setSerial(serial + 1);
-    setCallsign('');
-    setExchange('');
+    const qso: ContestQSO = { id: crypto.randomUUID(), callsign: callsign.toUpperCase(), exchange: exchange || '599',
+      band: '20m', time: new Date().toISOString().slice(11, 16), isDupe: qsos.some(q => q.callsign === callsign.toUpperCase()), points: 3 };
+    setQsos([qso, ...qsos]); setSerial(serial + 1); setCallsign(''); setExchange('');
   }
 
   const totalPoints = qsos.filter(q => !q.isDupe).reduce((s, q) => s + q.points, 0);
@@ -60,9 +42,7 @@ export function ContestPanel() {
           <>
             <Select value={contest} onValueChange={setContest}>
               <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {CONTESTS.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-              </SelectContent>
+              <SelectContent>{CONTESTS.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
             </Select>
             <Button size="sm" onClick={() => setActive(true)}><Play size={12} /> Start</Button>
           </>
@@ -76,83 +56,61 @@ export function ContestPanel() {
 
       {active && (
         <>
-          {/* Score summary */}
           <div className="grid grid-cols-4 gap-2 mb-4">
-            <ScoreCard label="QSOs" value={validQsos} />
-            <ScoreCard label="Points" value={totalPoints} />
-            <ScoreCard label="Mults" value={Math.floor(validQsos * 0.6)} />
-            <ScoreCard label="Score" value={totalPoints * Math.max(1, Math.floor(validQsos * 0.6))} />
+            {[['QSOs', validQsos], ['Points', totalPoints], ['Mults', Math.floor(validQsos * 0.6)], ['Score', totalPoints * Math.max(1, Math.floor(validQsos * 0.6))]].map(([label, value]) => (
+              <Card key={label as string}><CardContent className="p-2 text-center">
+                <div className="text-lg font-bold font-mono text-[var(--accent)]">{(value as number).toLocaleString()}</div>
+                <Label className="block mt-0.5">{label as string}</Label>
+              </CardContent></Card>
+            ))}
           </div>
 
-          {/* Quick entry */}
           <div className="flex gap-2 mb-4">
-            <Input
-              className="font-mono uppercase flex-1"
-              placeholder="Callsign"
-              value={callsign}
+            <Input className="font-mono uppercase flex-1" placeholder="Callsign" value={callsign}
               onChange={(e) => setCallsign(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') { if (exchange) logContact(); else document.getElementById('contest-exch')?.focus(); } }}
-              autoFocus
-            />
-            <Input
-              id="contest-exch"
-              className="font-mono w-32"
-              placeholder="Exchange"
-              value={exchange}
+              autoFocus />
+            <Input id="contest-exch" className="font-mono w-32" placeholder="Exchange" value={exchange}
               onChange={(e) => setExchange(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') logContact(); }}
-            />
+              onKeyDown={(e) => { if (e.key === 'Enter') logContact(); }} />
             <Button onClick={logContact} disabled={!callsign.trim()}>Log</Button>
           </div>
 
           <Separator className="mb-3" />
 
-          {/* QSO list */}
-          <div className="flex-1 overflow-auto">
-            <table className="w-full text-xs" style={{ borderCollapse: 'collapse' }}>
-              <thead>
-                <tr>
-                  {['#', 'Time', 'Callsign', 'Exch', 'Band', 'Pts'].map(h => (
-                    <th key={h} className="text-left px-2 py-1.5 sticky top-0" style={{ color: 'var(--text-muted)', background: 'var(--bg)', borderBottom: '1px solid var(--border)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
+          <ScrollArea className="flex-1">
+            <Table>
+              <TableHeader>
+                <TableRow className="hover:bg-transparent">
+                  <TableHead>#</TableHead><TableHead>Time</TableHead><TableHead>Callsign</TableHead>
+                  <TableHead>Exch</TableHead><TableHead>Band</TableHead><TableHead>Pts</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {qsos.map((qso, i) => (
-                  <tr key={qso.id} style={{ borderBottom: '1px solid var(--border-subtle)', opacity: qso.isDupe ? 0.4 : 1 }}>
-                    <td className="px-2 py-1 font-mono" style={{ color: 'var(--text-muted)' }}>{qsos.length - i}</td>
-                    <td className="px-2 py-1 font-mono" style={{ color: 'var(--text-muted)' }}>{qso.time}</td>
-                    <td className="px-2 py-1 font-mono font-medium" style={{ color: qso.isDupe ? 'var(--red)' : 'var(--accent-text)' }}>
+                  <TableRow key={qso.id} className={qso.isDupe ? 'opacity-40' : ''}>
+                    <TableCell className="font-mono text-[var(--text-muted)]">{qsos.length - i}</TableCell>
+                    <TableCell className="font-mono text-[var(--text-muted)]">{qso.time}</TableCell>
+                    <TableCell className={`font-mono font-medium ${qso.isDupe ? 'text-[var(--red)]' : 'text-[var(--accent-text)]'}`}>
                       {qso.callsign} {qso.isDupe && <Badge variant="red" className="ml-1">DUPE</Badge>}
-                    </td>
-                    <td className="px-2 py-1 font-mono">{qso.exchange}</td>
-                    <td className="px-2 py-1 font-mono">{qso.band}</td>
-                    <td className="px-2 py-1 font-mono">{qso.isDupe ? 0 : qso.points}</td>
-                  </tr>
+                    </TableCell>
+                    <TableCell className="font-mono">{qso.exchange}</TableCell>
+                    <TableCell className="font-mono">{qso.band}</TableCell>
+                    <TableCell className="font-mono">{qso.isDupe ? 0 : qso.points}</TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </TableBody>
+            </Table>
+          </ScrollArea>
         </>
       )}
 
       {!active && (
-        <div className="flex-1 flex flex-col items-center justify-center" style={{ color: 'var(--text-muted)' }}>
+        <div className="flex-1 flex flex-col items-center justify-center text-[var(--text-muted)]">
           <p className="text-sm">Select a contest and click Start to begin operating</p>
           <p className="text-xs mt-1">Tab between callsign and exchange, Enter to log</p>
         </div>
       )}
-    </div>
-  );
-}
-
-function ScoreCard({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="rounded-md p-2 text-center" style={{ border: '1px solid var(--border)', background: 'var(--bg-surface)' }}>
-      <div className="text-lg font-bold font-mono" style={{ color: 'var(--accent)' }}>{value.toLocaleString()}</div>
-      <div className="text-[9px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{label}</div>
     </div>
   );
 }
