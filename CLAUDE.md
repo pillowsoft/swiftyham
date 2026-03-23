@@ -47,7 +47,14 @@ Use the justfile for all build/test/run tasks. Keep it updated as new tasks are 
 
 ## Design System
 
-- SF Pro for text, SF Mono for data (frequencies, callsigns, RST, grids)
+Always read DESIGN.md before making any visual or UI decisions.
+All font choices, colors, spacing, and aesthetic direction are defined there.
+Do not deviate without explicit user approval.
+
+**Quick reference:**
+- Fonts: Geist (sans), Geist Mono (data/code)
 - Accent: `#FF6A00` (ham radio orange)
 - Night mode: `#8B0000` (deep red for dark-adapted vision)
-- macOS compact spacing for information density
+- Dark mode default, compact spacing, 4px base unit
+- Web stack: React, Valtio, ShadCN/ui, TailwindCSS
+- Desktop: Electrobun (not Electron)

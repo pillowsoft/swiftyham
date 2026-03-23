@@ -31,3 +31,7 @@ Package.resolved
 # Secrets
 *.env
 *.key
+node_modules/
+dist/
+.vite/
+*.tsbuildinfo
