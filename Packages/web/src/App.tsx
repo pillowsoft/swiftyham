@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSnapshot } from 'valtio';
 import { appStore, setTheme } from '@/stores/app';
 import { logbookStore, loadDemoData } from '@/stores/logbook';
@@ -6,10 +6,16 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import { StatusBar } from '@/components/layout/StatusBar';
 import { Inspector } from '@/components/layout/Inspector';
 import { LogbookTable } from '@/components/logbook/LogbookTable';
-import { Settings, PanelRightClose, PanelRight, Sun, Moon, Eye } from 'lucide-react';
+import { QSOEntryForm } from '@/components/logbook/QSOEntryForm';
+import { PropagationDash } from '@/components/propagation/PropagationDash';
+import { AwardsDashboard } from '@/components/awards/AwardsDashboard';
+import { ToolsPanel } from '@/components/tools/ToolsPanel';
+import { SettingsDialog } from '@/components/settings/SettingsDialog';
+import { Settings, PanelRightClose, PanelRight, Sun, Moon, Eye, Plus } from 'lucide-react';
 
 export function App() {
   const snap = useSnapshot(appStore);
+  const [showNewQSO, setShowNewQSO] = useState(false);
 
   // Initialize theme on mount
   useEffect(() => {
@@ -17,44 +23,55 @@ export function App() {
     loadDemoData();
   }, []);
 
+  // Keyboard shortcut: Cmd+N for new QSO
+  useEffect(() => {
+    function handleKey(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'n') {
+        e.preventDefault();
+        setShowNewQSO(true);
+      }
+      if (e.key === 'Escape') {
+        setShowNewQSO(false);
+        appStore.showSettings = false;
+      }
+    }
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, []);
+
   return (
     <div className="flex flex-col h-screen">
       {/* Toolbar */}
-      <Toolbar />
+      <Toolbar onNewQSO={() => setShowNewQSO(true)} />
 
       {/* Main layout */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
         <Sidebar />
 
-        {/* Content */}
         <main className="flex-1 flex flex-col overflow-hidden">
           <ContentView section={snap.selectedSection} />
         </main>
 
-        {/* Inspector */}
         {snap.showInspector && (
           <aside
             className="border-l overflow-hidden"
-            style={{
-              width: 280,
-              minWidth: 250,
-              background: 'var(--bg-surface)',
-              borderColor: 'var(--border)',
-            }}
+            style={{ width: 280, minWidth: 250, background: 'var(--bg-surface)', borderColor: 'var(--border)' }}
           >
             <Inspector />
           </aside>
         )}
       </div>
 
-      {/* Status Bar */}
       <StatusBar />
+
+      {/* Modals */}
+      {showNewQSO && <QSOEntryForm onClose={() => setShowNewQSO(false)} />}
+      {snap.showSettings && <SettingsDialog onClose={() => { appStore.showSettings = false; }} />}
     </div>
   );
 }
 
-function Toolbar() {
+function Toolbar({ onNewQSO }: { onNewQSO: () => void }) {
   const snap = useSnapshot(appStore);
 
   return (
@@ -75,6 +92,16 @@ function Toolbar() {
       >
         {snap.operatorCallsign || 'N0CALL'}
       </span>
+
+      {/* New QSO button */}
+      <button
+        onClick={onNewQSO}
+        className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium cursor-pointer"
+        style={{ background: 'var(--accent)', color: 'white' }}
+        title="New QSO (⌘N)"
+      >
+        <Plus size={12} /> Log QSO
+      </button>
 
       <div className="flex-1" />
 
@@ -150,6 +177,12 @@ function ContentView({ section }: { section: string }) {
   switch (section) {
     case 'logbook':
       return <LogbookTable />;
+    case 'propagation':
+      return <PropagationDash />;
+    case 'awards':
+      return <AwardsDashboard />;
+    case 'tools':
+      return <ToolsPanel />;
     default:
       return (
         <div className="flex flex-col items-center justify-center flex-1" style={{ color: 'var(--text-muted)' }}>
