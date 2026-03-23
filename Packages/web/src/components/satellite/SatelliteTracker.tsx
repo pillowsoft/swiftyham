@@ -1,5 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { parseTLE, DEMO_TLES } from '@hamstation/shared/src/satellite/tle-parser';
+import { propagate } from '@hamstation/shared/src/satellite/sgp4';
+import { RefreshCw } from 'lucide-react';
 
 interface SatPass {
   id: string;
