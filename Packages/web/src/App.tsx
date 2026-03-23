@@ -11,6 +11,8 @@ import { PropagationDash } from '@/components/propagation/PropagationDash';
 import { AwardsDashboard } from '@/components/awards/AwardsDashboard';
 import { ToolsPanel } from '@/components/tools/ToolsPanel';
 import { SettingsDialog } from '@/components/settings/SettingsDialog';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 import { Settings, PanelRightClose, PanelRight, Sun, Moon, Eye, Plus } from 'lucide-react';
 
 export function App() {
@@ -65,7 +67,7 @@ export function App() {
       <StatusBar />
 
       {/* Modals */}
-      {showNewQSO && <QSOEntryForm onClose={() => setShowNewQSO(false)} />}
+      <QSOEntryForm open={showNewQSO} onOpenChange={setShowNewQSO} />
       {snap.showSettings && <SettingsDialog onClose={() => { appStore.showSettings = false; }} />}
     </div>
   );
@@ -94,82 +96,37 @@ function Toolbar({ onNewQSO }: { onNewQSO: () => void }) {
       </span>
 
       {/* New QSO button */}
-      <button
-        onClick={onNewQSO}
-        className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium cursor-pointer"
-        style={{ background: 'var(--accent)', color: 'white' }}
-        title="New QSO (⌘N)"
-      >
+      <Button size="sm" onClick={onNewQSO} title="New QSO (⌘N)">
         <Plus size={12} /> Log QSO
-      </button>
+      </Button>
 
       <div className="flex-1" />
 
       {/* Theme toggle */}
-      <div className="flex items-center gap-1">
-        <ToolbarButton
-          icon={<Sun size={14} />}
-          active={snap.theme === 'light'}
-          onClick={() => setTheme('light')}
-          title="Light"
-        />
-        <ToolbarButton
-          icon={<Moon size={14} />}
-          active={snap.theme === 'dark'}
-          onClick={() => setTheme('dark')}
-          title="Dark"
-        />
-        <ToolbarButton
-          icon={<Eye size={14} />}
-          active={snap.theme === 'night'}
-          onClick={() => setTheme('night')}
-          title="Night"
-        />
+      <div className="flex items-center gap-0.5">
+        <Button variant={snap.theme === 'light' ? 'default' : 'ghost'} size="icon" onClick={() => setTheme('light')} title="Light" className="h-7 w-7">
+          <Sun size={14} />
+        </Button>
+        <Button variant={snap.theme === 'dark' ? 'default' : 'ghost'} size="icon" onClick={() => setTheme('dark')} title="Dark" className="h-7 w-7">
+          <Moon size={14} />
+        </Button>
+        <Button variant={snap.theme === 'night' ? 'default' : 'ghost'} size="icon" onClick={() => setTheme('night')} title="Night" className="h-7 w-7">
+          <Eye size={14} />
+        </Button>
       </div>
 
-      <div style={{ width: 1, height: 16, background: 'var(--border)' }} />
+      <Separator orientation="vertical" className="h-4" />
 
       {/* Inspector toggle */}
-      <ToolbarButton
-        icon={snap.showInspector ? <PanelRightClose size={14} /> : <PanelRight size={14} />}
-        onClick={() => { appStore.showInspector = !appStore.showInspector; }}
-        title={snap.showInspector ? 'Hide Inspector' : 'Show Inspector'}
-      />
+      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { appStore.showInspector = !appStore.showInspector; }} title={snap.showInspector ? 'Hide Inspector' : 'Show Inspector'}>
+        {snap.showInspector ? <PanelRightClose size={14} /> : <PanelRight size={14} />}
+      </Button>
 
       {/* Settings */}
-      <ToolbarButton
-        icon={<Settings size={14} />}
-        onClick={() => { appStore.showSettings = !appStore.showSettings; }}
-        title="Settings"
-      />
+      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { appStore.showSettings = !appStore.showSettings; }} title="Settings">
+        <Settings size={14} />
+      </Button>
     </div>
-  );
-}
-
-function ToolbarButton({ icon, onClick, title, active }: {
-  icon: React.ReactNode;
-  onClick: () => void;
-  title: string;
-  active?: boolean;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      title={title}
-      className="p-1 rounded cursor-pointer transition-colors"
-      style={{
-        color: active ? 'var(--accent)' : 'var(--text-secondary)',
-        background: active ? 'var(--accent-dim)' : undefined,
-      }}
-      onMouseEnter={(e) => {
-        if (!active) (e.currentTarget as HTMLElement).style.background = 'var(--bg-tertiary)';
-      }}
-      onMouseLeave={(e) => {
-        if (!active) (e.currentTarget as HTMLElement).style.background = '';
-      }}
-    >
-      {icon}
-    </button>
   );
 }
 

@@ -1,6 +1,7 @@
 import { useSnapshot } from 'valtio';
 import { logbookStore } from '@/stores/logbook';
 import { appStore } from '@/stores/app';
+import { Badge } from '@/components/ui/badge';
 import type { QSO } from '@hamstation/shared';
 
 function formatTime(iso: string): string {
@@ -12,10 +13,10 @@ function formatFreq(hz: number): string {
   return (hz / 1_000_000).toFixed(3);
 }
 
-function modeBadgeColor(mode: string): string {
-  if (['FT8', 'FT4', 'JS8', 'WSPR'].includes(mode)) return 'var(--accent)';
-  if (mode === 'CW') return 'var(--yellow)';
-  return 'var(--gray)';
+function modeBadgeVariant(mode: string): 'default' | 'yellow' | 'gray' {
+  if (['FT8', 'FT4', 'JS8', 'WSPR'].includes(mode)) return 'default';
+  if (mode === 'CW') return 'yellow';
+  return 'gray';
 }
 
 export function LogbookTable() {
@@ -77,16 +78,7 @@ export function LogbookTable() {
                 </td>
                 <td style={{ ...cellStyle, fontFamily: 'var(--font-mono)' }}>{qso.band}</td>
                 <td style={cellStyle}>
-                  <span
-                    className="inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium"
-                    style={{
-                      fontFamily: 'var(--font-mono)',
-                      background: `color-mix(in srgb, ${modeBadgeColor(qso.mode)} 15%, transparent)`,
-                      color: modeBadgeColor(qso.mode),
-                    }}
-                  >
-                    {qso.mode}
-                  </span>
+                  <Badge variant={modeBadgeVariant(qso.mode)}>{qso.mode}</Badge>
                 </td>
                 <td style={{ ...cellStyle, fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
                   {formatFreq(qso.frequencyHz)}

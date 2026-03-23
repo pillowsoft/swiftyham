@@ -8,6 +8,15 @@ export SWIFT_EXEC := "/usr/bin/swiftc"
 default:
     @just --list
 
+# Start the web app dev server (kills stale vite first)
+web-dev:
+    @lsof -ti:5173 | xargs kill -9 2>/dev/null || true
+    cd Packages/web && pnpm dev
+
+# Build the web app
+web-build:
+    cd Packages/web && pnpm build
+
 # Generate Xcode project from project.yml
 generate:
     xcodegen generate
