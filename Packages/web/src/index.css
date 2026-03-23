@@ -1,0 +1,94 @@
+@import "tailwindcss";
+
+/* Design system tokens from DESIGN.md */
+:root {
+  --font-sans: 'Geist', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Geist Mono', 'SF Mono', 'Menlo', monospace;
+  --base: 4px;
+  --radius: 4px;
+}
+
+/* Dark theme (default) */
+.dark {
+  --bg: #0F1117;
+  --bg-surface: #161822;
+  --bg-tertiary: #1C1F2E;
+  --bg-elevated: #232738;
+  --border: #2A2E3F;
+  --border-subtle: #1E2233;
+  --text: #F5F5F7;
+  --text-secondary: #A0A3B1;
+  --text-muted: #6B6F80;
+  --accent: #FF6A00;
+  --accent-dim: rgba(255, 106, 0, 0.12);
+  --accent-text: #FF8C33;
+  --green: #22C55E;
+  --yellow: #EAB308;
+  --red: #EF4444;
+  --blue: #3B82F6;
+  --gray: #6B7280;
+}
+
+/* Light theme */
+.light {
+  --bg: #FAFAFA;
+  --bg-surface: #FFFFFF;
+  --bg-tertiary: #F5F5F7;
+  --bg-elevated: #FFFFFF;
+  --border: #E5E7EB;
+  --border-subtle: #F0F0F2;
+  --text: #0A0A0F;
+  --text-secondary: #4B5563;
+  --text-muted: #9CA3AF;
+  --accent: #FF6A00;
+  --accent-dim: rgba(255, 106, 0, 0.08);
+  --accent-text: #CC5500;
+  --green: #16A34A;
+  --yellow: #CA8A04;
+  --red: #DC2626;
+  --blue: #2563EB;
+  --gray: #6B7280;
+}
+
+/* Night mode (dark-adapted vision) */
+.night {
+  --bg: #0A0000;
+  --bg-surface: #120000;
+  --bg-tertiary: #1A0000;
+  --bg-elevated: #200000;
+  --border: #2D0000;
+  --border-subtle: #1A0000;
+  --text: #FF9999;
+  --text-secondary: #CC6666;
+  --text-muted: #804040;
+  --accent: #8B0000;
+  --accent-dim: rgba(139, 0, 0, 0.2);
+  --accent-text: #CC3333;
+  --green: #8B0000;
+  --yellow: #8B0000;
+  --red: #8B0000;
+  --blue: #8B0000;
+  --gray: #663333;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body, #root {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar styling for dark mode */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
