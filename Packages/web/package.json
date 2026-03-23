@@ -27,6 +27,7 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "recharts": "^2.15.0",
+    "sql.js": "^1.14.1",
     "tailwind-merge": "^3.0.0",
     "valtio": "^2.1.0"
   },

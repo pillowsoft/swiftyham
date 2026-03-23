@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { logbookStore, createQSO } from '@/stores/logbook';
+import { logbookStore, createQSO, addQSO } from '@/stores/logbook';
 import { appStore } from '@/stores/app';
 import { parseADIF, exportADIF, createRecord } from '@hamstation/shared/src/adif/parser';
 import type { BandId } from '@hamstation/shared';
@@ -52,11 +52,9 @@ export function ImportButton() {
         comment: record.get('COMMENT') || undefined,
       });
 
-      logbookStore.qsos.push(qso);
+      await addQSO(qso);
       imported++;
     }
-
-    logbookStore.totalCount = logbookStore.qsos.length;
 
     if (result.warnings.length > 0) {
       console.warn(`ADIF import: ${imported} QSOs imported, ${result.warnings.length} warnings`);

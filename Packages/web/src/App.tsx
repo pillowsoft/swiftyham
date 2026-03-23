@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useSnapshot } from 'valtio';
 import { appStore, setTheme } from '@/stores/app';
-import { logbookStore, loadDemoData } from '@/stores/logbook';
+import { loadDemoData, connectDatabase } from '@/stores/logbook';
+import { useDatabase } from '@/hooks/useDatabase';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { StatusBar } from '@/components/layout/StatusBar';
 import { Inspector } from '@/components/layout/Inspector';
@@ -33,11 +34,21 @@ export function App() {
   const snap = useSnapshot(appStore);
   const [showNewQSO, setShowNewQSO] = useState(false);
 
-  // Initialize theme on mount
+  const dbCtx = useDatabase();
+
+  // Initialize theme on mount + load fallback demo data
   useEffect(() => {
     document.documentElement.className = appStore.theme;
-    loadDemoData();
+    loadDemoData(); // Loads in-memory fallback immediately
   }, []);
+
+  // When database is ready, reconnect and reload from DB
+  useEffect(() => {
+    if (dbCtx?.isReady) {
+      connectDatabase(dbCtx.repo, dbCtx.save);
+      loadDemoData(); // Now loads from DB
+    }
+  }, [dbCtx?.isReady]);
 
   // Keyboard shortcut: Cmd+N for new QSO
   useEffect(() => {

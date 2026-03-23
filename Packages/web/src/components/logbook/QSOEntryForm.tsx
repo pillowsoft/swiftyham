@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { logbookStore, createQSO } from '@/stores/logbook';
+import { createQSO, addQSO } from '@/stores/logbook';
 import { appStore } from '@/stores/app';
 import { ALL_BANDS, type BandId, bandForFrequency } from '@hamstation/shared';
 import { ALL_MODES, defaultRST, type OperatingMode } from '@hamstation/shared';
@@ -53,8 +53,7 @@ export function QSOEntryForm({ open, onOpenChange }: Props) {
       name: name || undefined, qth: qth || undefined,
       theirGrid: grid || undefined, comment: comment || undefined,
     });
-    logbookStore.qsos.unshift(qso);
-    logbookStore.totalCount++;
+    addQSO(qso);
     resetForm();
     onOpenChange(false);
   }

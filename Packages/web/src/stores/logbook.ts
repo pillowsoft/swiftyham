@@ -1,12 +1,17 @@
-import { proxy } from 'valtio';
+import { proxy, ref } from 'valtio';
 import type { QSO, QSOFilter, BandId } from '@hamstation/shared';
 import type { OperatingMode } from '@hamstation/shared';
+import type { QSORepository, DatabaseDriver } from '@hamstation/shared/src/db/repository';
 import { v4 as uuid } from 'uuid';
 
 export const logbookStore = proxy({
   qsos: [] as QSO[],
   totalCount: 0,
   isLoading: false,
+
+  // Database reference (set after init)
+  _repo: null as QSORepository | null,
+  _save: null as (() => Promise<void>) | null,
 
   // Filters
   filter: {
@@ -15,10 +20,28 @@ export const logbookStore = proxy({
     mode: undefined as OperatingMode | undefined,
     sortBy: 'datetimeOn' as const,
     ascending: false,
-    limit: 100,
+    limit: 200,
     offset: 0,
   } satisfies QSOFilter,
 });
+
+/** Connect logbook store to database. */
+export function connectDatabase(repo: QSORepository, save: () => Promise<void>) {
+  logbookStore._repo = repo;
+  logbookStore._save = save;
+  refreshLogbook();
+}
+
+/** Reload QSOs from database. */
+export function refreshLogbook() {
+  const repo = logbookStore._repo;
+  if (!repo) return;
+
+  logbookStore.isLoading = true;
+  logbookStore.qsos = repo.findAll(logbookStore.filter);
+  logbookStore.totalCount = repo.count();
+  logbookStore.isLoading = false;
+}
 
 /** Create a new QSO with defaults. */
 export function createQSO(fields: Partial<QSO> & { callsign: string; myCallsign: string }): QSO {
@@ -37,10 +60,43 @@ export function createQSO(fields: Partial<QSO> & { callsign: string; myCallsign:
   };
 }
 
-// Demo data for initial development
+/** Add a QSO to the database and refresh. */
+export async function addQSO(qso: QSO) {
+  const repo = logbookStore._repo;
+  if (repo) {
+    repo.insert(qso);
+    await logbookStore._save?.();
+  }
+  refreshLogbook();
+}
+
+/** Delete a QSO and refresh. */
+export async function deleteQSO(id: string) {
+  const repo = logbookStore._repo;
+  if (repo) {
+    repo.delete(id);
+    await logbookStore._save?.();
+  }
+  refreshLogbook();
+}
+
+/** Load demo data into the database (if empty). */
 export function loadDemoData() {
+  const repo = logbookStore._repo;
+  if (!repo) {
+    // No database yet — load into memory
+    loadDemoDataInMemory();
+    return;
+  }
+
+  // Only load demo data if database is empty
+  if (repo.count() > 0) {
+    refreshLogbook();
+    return;
+  }
+
   const now = Date.now();
-  const demoQSOs: QSO[] = [
+  const demoQSOs = [
     createQSO({ callsign: 'JA1ABC', myCallsign: 'W1AW', band: '20m', mode: 'FT8', frequencyHz: 14_074_000, rstSent: '-10', rstReceived: '-12', name: 'Taro', datetimeOn: new Date(now - 300_000).toISOString() }),
     createQSO({ callsign: 'DL1ABC', myCallsign: 'W1AW', band: '20m', mode: 'FT8', frequencyHz: 14_074_000, rstSent: '-08', rstReceived: '-15', name: 'Hans', datetimeOn: new Date(now - 600_000).toISOString() }),
     createQSO({ callsign: 'VK2RZA', myCallsign: 'W1AW', band: '15m', mode: 'SSB', frequencyHz: 21_250_000, rstSent: '59', rstReceived: '57', name: 'Ray', datetimeOn: new Date(now - 1_200_000).toISOString() }),
@@ -52,6 +108,21 @@ export function loadDemoData() {
     createQSO({ callsign: 'VU2ABC', myCallsign: 'W1AW', band: '20m', mode: 'FT4', frequencyHz: 14_080_000, rstSent: '-03', rstReceived: '-10', name: 'Raj', datetimeOn: new Date(now - 8_400_000).toISOString() }),
     createQSO({ callsign: 'G4ABC', myCallsign: 'W1AW', band: '20m', mode: 'SSB', frequencyHz: 14_195_000, rstSent: '59', rstReceived: '59', name: 'John', datetimeOn: new Date(now - 9_600_000).toISOString() }),
   ];
-  logbookStore.qsos = demoQSOs;
-  logbookStore.totalCount = demoQSOs.length;
+
+  for (const qso of demoQSOs) {
+    repo.insert(qso);
+  }
+
+  refreshLogbook();
+}
+
+/** Fallback: load demo data into memory (before DB is ready). */
+function loadDemoDataInMemory() {
+  const now = Date.now();
+  logbookStore.qsos = [
+    createQSO({ callsign: 'JA1ABC', myCallsign: 'W1AW', band: '20m', mode: 'FT8', frequencyHz: 14_074_000, rstSent: '-10', rstReceived: '-12', name: 'Taro', datetimeOn: new Date(now - 300_000).toISOString() }),
+    createQSO({ callsign: 'DL1ABC', myCallsign: 'W1AW', band: '20m', mode: 'FT8', frequencyHz: 14_074_000, rstSent: '-08', rstReceived: '-15', name: 'Hans', datetimeOn: new Date(now - 600_000).toISOString() }),
+    createQSO({ callsign: 'VK2RZA', myCallsign: 'W1AW', band: '15m', mode: 'SSB', frequencyHz: 21_250_000, rstSent: '59', rstReceived: '57', name: 'Ray', datetimeOn: new Date(now - 1_200_000).toISOString() }),
+  ];
+  logbookStore.totalCount = logbookStore.qsos.length;
 }
