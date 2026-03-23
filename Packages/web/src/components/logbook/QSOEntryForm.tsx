@@ -214,7 +214,7 @@ export function QSOEntryForm({ open, onOpenChange }: Props) {
 
 function Label({ children }: { children: React.ReactNode }) {
   return (
-    <label className="text-[10px] uppercase tracking-wider mb-1 block" className="text-muted-foreground">
+    <label className="text-[10px] uppercase tracking-wider mb-1 block text-muted-foreground">
       {children}
     </label>
   );

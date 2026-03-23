@@ -193,8 +193,8 @@ function ContentView({ section }: { section: string }) {
       );
     default:
       return (
-        <div className="flex flex-col items-center justify-center flex-1" className="text-muted-foreground">
-          <p className="text-lg font-medium capitalize" className="text-muted-foreground">
+        <div className="flex flex-col items-center justify-center flex-1 text-muted-foreground">
+          <p className="text-lg font-medium capitalize text-muted-foreground">
             {section.replace(/([A-Z])/g, ' $1').trim()}
           </p>
           <p className="text-sm mt-1">Coming soon</p>
