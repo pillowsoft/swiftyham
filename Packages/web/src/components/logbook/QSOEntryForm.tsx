@@ -3,12 +3,14 @@ import { createQSO, addQSO } from '@/stores/logbook';
 import { appStore } from '@/stores/app';
 import { ALL_BANDS, type BandId, bandForFrequency } from '@hamstation/shared';
 import { ALL_MODES, defaultRST, type OperatingMode } from '@hamstation/shared';
+import { lookupCallsign } from '@hamstation/shared/src/callsign/lookup';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { Mic } from 'lucide-react';
+import { Mic, Search, Loader2 } from 'lucide-react';
 
 interface Props {
   open: boolean;
@@ -27,6 +29,22 @@ export function QSOEntryForm({ open, onOpenChange }: Props) {
   const [grid, setGrid] = useState('');
   const [comment, setComment] = useState('');
   const [nlText, setNlText] = useState('');
+  const [isLookingUp, setIsLookingUp] = useState(false);
+  const [lookupStatus, setLookupStatus] = useState<'none' | 'found' | 'not_found' | 'error'>('none');
+
+  async function handleLookup() {
+    if (!callsign.trim()) return;
+    setIsLookingUp(true);
+    setLookupStatus('none');
+    const result = await lookupCallsign(callsign);
+    setIsLookingUp(false);
+    setLookupStatus(result.status);
+    if (result.status === 'found') {
+      if (result.name && !name) setName(result.name);
+      if (result.qth && !qth) setQth(result.qth);
+      if (result.grid && !grid) setGrid(result.grid);
+    }
+  }
 
   function handleModeChange(newMode: OperatingMode) {
     setMode(newMode);
@@ -97,14 +115,22 @@ export function QSOEntryForm({ open, onOpenChange }: Props) {
           {/* Callsign */}
           <div>
             <Label>Callsign</Label>
-            <Input
-              className="font-mono text-lg font-bold uppercase"
-              style={{ color: 'var(--accent)' }}
-              value={callsign}
-              onChange={(e) => setCallsign(e.target.value)}
-              placeholder="W1AW"
-              autoFocus
-            />
+            <div className="flex gap-1.5">
+              <Input
+                className="font-mono text-lg font-bold uppercase flex-1"
+                style={{ color: 'var(--accent)' }}
+                value={callsign}
+                onChange={(e) => setCallsign(e.target.value)}
+                onBlur={() => { if (callsign.trim().length >= 3) handleLookup(); }}
+                placeholder="W1AW"
+                autoFocus
+              />
+              <Button variant="secondary" size="icon" onClick={handleLookup} disabled={isLookingUp || callsign.trim().length < 3} title="Lookup callsign">
+                {isLookingUp ? <Loader2 size={14} className="animate-spin" /> : <Search size={14} />}
+              </Button>
+            </div>
+            {lookupStatus === 'found' && <Badge variant="green" className="mt-1">Found</Badge>}
+            {lookupStatus === 'not_found' && <Badge variant="yellow" className="mt-1">Not in HamDB</Badge>}
           </div>
 
           {/* Band / Mode / Freq */}
