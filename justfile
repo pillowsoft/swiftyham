@@ -17,9 +17,19 @@ web-dev:
 web-build:
     cd Packages/web && pnpm build
 
-# Run the desktop app (Electrobun + CEF) — run 'just web-dev' first in another terminal
+# Run web + desktop together (kills both on quit)
+desktop:
+    #!/usr/bin/env bash
+    set -e
+    trap 'kill 0' EXIT
+    lsof -ti:7300 | xargs kill -9 2>/dev/null || true
+    (cd Packages/web && pnpm dev) &
+    sleep 3
+    (cd Packages/desktop && bun install --silent && bun run start)
+
+# Run the desktop app only — run 'just web-dev' first in another terminal
 desktop-dev:
-    cd Packages/desktop && bun install && bun run start
+    cd Packages/desktop && bun install --silent && bun run start
 
 # Build the desktop app for distribution
 desktop-build:
