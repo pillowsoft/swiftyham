@@ -24,6 +24,7 @@ import { RepeaterPanel } from '@/components/maps/RepeaterPanel';
 import { EmCommPanel } from '@/components/maps/EmCommPanel';
 import { BridgeGate } from '@/components/shared/BridgeGate';
 import { SettingsDialog } from '@/components/settings/SettingsDialog';
+import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Settings, PanelRightClose, PanelRight, Sun, Moon, Eye, Plus } from 'lucide-react';
@@ -82,6 +83,10 @@ export function App() {
       {/* Modals */}
       <QSOEntryForm open={showNewQSO} onOpenChange={setShowNewQSO} />
       {snap.showSettings && <SettingsDialog onClose={() => { appStore.showSettings = false; }} />}
+      <OnboardingWizard
+        open={!snap.hasCompletedOnboarding}
+        onComplete={() => {}}
+      />
     </div>
   );
 }
