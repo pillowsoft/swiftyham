@@ -15,6 +15,12 @@ import { ContestPanel } from '@/components/contest/ContestPanel';
 import { DXClusterPanel } from '@/components/cluster/DXClusterPanel';
 import { FT8Panel } from '@/components/ft8/FT8Panel';
 import { AIAssistantChat } from '@/components/ai/AIAssistantChat';
+import { GreatCircleMap } from '@/components/maps/GreatCircleMap';
+import { CWTraining } from '@/components/cw/CWTraining';
+import { AntennaCalc } from '@/components/maps/AntennaCalc';
+import { SOTAPOTAPanel } from '@/components/maps/SOTAPOTAPanel';
+import { RepeaterPanel } from '@/components/maps/RepeaterPanel';
+import { EmCommPanel } from '@/components/maps/EmCommPanel';
 import { BridgeGate } from '@/components/shared/BridgeGate';
 import { SettingsDialog } from '@/components/settings/SettingsDialog';
 import { Button } from '@/components/ui/button';
@@ -152,6 +158,16 @@ function ContentView({ section }: { section: string }) {
       return <AIAssistantChat />;
     case 'tools':
       return <ToolsPanel />;
+    case 'greatCircleMap':
+      return <GreatCircleMap />;
+    case 'cwTraining':
+      return <CWTraining />;
+    case 'sotaPota':
+      return <SOTAPOTAPanel />;
+    case 'repeaters':
+      return <RepeaterPanel />;
+    case 'globe':
+      return <EmCommPanel />; // Globe will use Three.js — showing EmComm for now
     case 'dxCluster':
       return <DXClusterPanel />;
     case 'ft8':
