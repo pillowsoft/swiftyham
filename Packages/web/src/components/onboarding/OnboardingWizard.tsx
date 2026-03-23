@@ -63,10 +63,10 @@ export function OnboardingWizard({ open, onComplete }: Props) {
         </div>
 
         {step === 'welcome' && (
-          <div className="text-center py-6 px-4">
-            <Radio size={48} className="text-primary mx-auto mb-4" />
+          <div className="flex flex-col items-center text-center py-8 px-6">
+            <Radio size={48} className="text-primary mb-4" />
             <h2 className="text-xl font-bold mb-2">Welcome to HamStation Pro</h2>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground max-w-sm">
               The modern amateur radio station for the web.
               Log contacts, track DX, monitor propagation, and more.
             </p>
@@ -153,7 +153,7 @@ export function OnboardingWizard({ open, onComplete }: Props) {
         )}
 
         {step === 'done' && (
-          <div className="text-center py-6 px-4">
+          <div className="flex flex-col items-center text-center py-8 px-6">
             <div className="rounded-full p-3 mx-auto w-fit mb-4" style={{ background: 'color-mix(in srgb, var(--green) 15%, transparent)' }}>
               <Check size={32} className="text-success" />
             </div>
