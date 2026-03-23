@@ -20,18 +20,18 @@ export function Sidebar() {
   const snap = useSnapshot(appStore);
 
   return (
-    <aside className="flex flex-col border-r border-border bg-card w-[210px] min-w-[180px] h-full">
+    <aside className="flex flex-col border-r border-border bg-card w-[220px] min-w-[200px] h-full">
       {/* App header */}
-      <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border">
-        <Radio size={16} className="text-primary" />
-        <span className="text-xs font-semibold tracking-wide text-primary">
+      <div className="flex items-center gap-2 px-5 py-3 border-b border-border">
+        <Radio size={18} className="text-primary" />
+        <span className="text-sm font-semibold tracking-wide text-primary">
           HAMSTATION PRO
         </span>
       </div>
 
       {/* Nav items */}
       <ScrollArea className="flex-1">
-        <nav className="py-1.5 px-2">
+        <nav className="p-3">
           {SIDEBAR_ITEMS.map((item) => {
             const Icon = ICON_MAP[item.icon] || Radio;
             const active = snap.selectedSection === item.id;
@@ -39,10 +39,9 @@ export function Sidebar() {
               <Button
                 key={item.id}
                 variant="ghost"
-                size="sm"
                 onClick={() => { appStore.selectedSection = item.id; }}
                 className={cn(
-                  'w-full justify-start gap-2 mb-0.5 h-8 text-[13px] font-normal',
+                  'w-full justify-start gap-3 mb-0.5 font-normal',
                   active && 'bg-primary/10 text-primary hover:bg-primary/10 hover:text-primary',
                   !active && 'text-muted-foreground',
                 )}
