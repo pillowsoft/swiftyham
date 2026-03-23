@@ -7,3 +7,5 @@ export * from './satellite/sgp4';
 export * from './callsign/lookup';
 export * from './propagation/sun-calculator';
 export * from './ai/natural-language-logger';
+export * from './contest/engine';
+export * from './satellite/pass-predictor';

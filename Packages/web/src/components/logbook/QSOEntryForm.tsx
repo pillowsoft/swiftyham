@@ -4,6 +4,7 @@ import { appStore } from '@/stores/app';
 import { ALL_BANDS, type BandId, bandForFrequency } from '@hamstation/shared';
 import { ALL_MODES, defaultRST, type OperatingMode } from '@hamstation/shared';
 import { lookupCallsign } from '@hamstation/shared/src/callsign/lookup';
+import { parseNaturalLanguage } from '@hamstation/shared/src/ai/natural-language-logger';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -99,10 +100,15 @@ export function QSOEntryForm({ open, onOpenChange }: Props) {
             onChange={(e) => setNlText(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && nlText.trim()) {
-                const upper = nlText.toUpperCase();
-                const callMatch = upper.match(/\b([A-Z]{1,2}\d[A-Z0-9]?\d?[A-Z]{1,4})\b/);
-                if (callMatch) setCallsign(callMatch[1]);
+                const parsed = parseNaturalLanguage(nlText);
+                if (parsed.callsign) setCallsign(parsed.callsign);
+                if (parsed.band) setBand(parsed.band as BandId);
+                if (parsed.mode) { handleModeChange(parsed.mode as OperatingMode); }
+                if (parsed.rstSent) setRstSent(parsed.rstSent);
+                if (parsed.rstReceived) setRstReceived(parsed.rstReceived);
                 setNlText('');
+                // Auto-lookup if we got a callsign
+                if (parsed.callsign) setTimeout(() => handleLookup(), 100);
               }
             }}
           />
